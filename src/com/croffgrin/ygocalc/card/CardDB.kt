@@ -83,8 +83,6 @@ class CardDB(val filePath: String) {
         this._cardsByName = this._cards.values.groupBy {
             it.name
         }
-
-        val brigade = this._cards.filter { it.value.name.toUpperCase().contains("SOLEMN") }
     }
 
 
