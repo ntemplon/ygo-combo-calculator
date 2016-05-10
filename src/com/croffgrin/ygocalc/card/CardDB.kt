@@ -85,6 +85,9 @@ class CardDB(val filePath: String) {
         }
     }
 
+    operator fun get(id: Int): Card? = this._cards[id]
+    operator fun get(name: String): List<Card>? = this._cardsByName[name]
+
 
     companion object {
         private val DATA_TABLE_NAME = "datas"

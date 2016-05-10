@@ -1,8 +1,16 @@
 package com.croffgrin.ygocalc
 
 import com.croffgrin.ygocalc.card.CardDB
+import com.croffgrin.ygocalc.card.Deck
+import com.croffgrin.ygocalc.gui.DeckViewer
+import java.awt.Dimension
+import java.io.File
+import java.nio.file.Paths
+import javax.swing.JFileChooser
+import javax.swing.JFrame
 import javax.swing.JOptionPane
 import javax.swing.UIManager
+import javax.swing.filechooser.FileFilter
 
 /**
  * Copyright (c) 2016 Nathan S. Templon
@@ -29,6 +37,33 @@ fun main(args: Array<String>) {
     val testPath = "..\\..\\HDD Programs\\YGOPro DevPro\\cards.cdb"
     val db = CardDB(testPath)
     db.load()
+
+    // Open deck
+    val chooser = JFileChooser()
+    chooser.apply {
+        fileFilter = object : FileFilter() {
+            override fun accept(f: File): Boolean {
+                if (f.isDirectory) {
+                    return true
+                } else {
+                    return f.extension.toLowerCase() == "ydk"
+                }
+            }
+
+            override fun getDescription(): String = "YDK Files (*.ydk)"
+        }
+
+        currentDirectory = Paths.get("D:\\HDD Programs\\YGOPro DevPro\\deck").toFile()
+        preferredSize = Dimension(1000, 700)
+    }
+
+    if (chooser.showOpenDialog(null) == JFileChooser.APPROVE_OPTION) {
+        val file = chooser.selectedFile
+        val deck = Deck.fromYdk(file.toPath(), db)
+
+        val viewer = DeckViewer(deck)
+        viewer.isVisible = true
+    }
 }
 
 
@@ -51,10 +86,10 @@ object GuiConstants {
     private val MOTIF: String? = UIManager.getInstalledLookAndFeels().firstOrNull { info -> info.getName().equals("Motif") }?.className
     private val NATIVE: String? = UIManager.getSystemLookAndFeelClassName()
     private val PREFERENCE_ORDER = listOf(
+            NATIVE,
             NIMBUS,
             METAL,
-            MOTIF,
-            NATIVE
+            MOTIF
     )
     val LAF_NAME: String = PREFERENCE_ORDER.first { it != null } ?: ""
 }

@@ -1,7 +1,10 @@
 package com.croffgrin.ygocalc.card
 
+import com.croffgrin.ygocalc.util.exists
+import com.croffgrin.ygocalc.util.lines
+import java.nio.file.Files
 import java.nio.file.Path
-import java.util.*
+import java.nio.file.Paths
 
 /**
  * Copyright (c) 2016 Nathan S. Templon
@@ -20,64 +23,71 @@ import java.util.*
  * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
  * IN THE SOFTWARE.
  */
-class Deck {
-    private val _cards = ArrayList<Card>(60)
-
-    val cards: List<Card> = _cards
-    val count = this.cards.count()
-    val monsters: Int
-        get() = this.cards.filter { it is Card.MonsterCard }.count()
-    val spells: Int
-        get() = this.cards.filter { it is Card.SpellCard }.count()
-    val traps: Int
-        get() = this.cards.filter { it is Card.TrapCard }.count()
-
-    /**
-     * Indices go from 1 to [count]
-     */
-    operator fun get(index: Int): Card {
-        if (index < 1 || index > this.count) {
-            throw IllegalArgumentException("The index must be between 1 and the number of cards in the deck (${this.count}).")
-        }
-
-        return this.cards[index - 1]
-    }
-
-    /**
-     * If [card] is null, then the card at that position is removed.  Else, the card at that position is replaced
-     * Indices go from 1 to [count]
-     */
-    operator fun set(index: Int, card: Card?) {
-        if (index < 1 || index > this.count) {
-            throw IllegalArgumentException("The index must be between 1 and the number of cards in the deck (${this.count}).")
-        }
-
-        if (card == null) {
-            this.removeAt(index)
-        } else {
-            this._cards[index - 1] = card
-        }
-    }
-
-    /**
-     * Indices go from 1 to [count]
-     * @return The card that was removed from the deck.
-     */
-    fun removeAt(index: Int): Card {
-        if (index < 1 || index > this.count) {
-            throw IllegalArgumentException("The index must be between 1 and the number of cards in the deck (${this.count}).")
-        }
-
-        return this._cards.removeAt(index - 1)
-    }
-
-
-    fun add(card: Card): Boolean = this._cards.add(card)
-
+class Deck private constructor(val name: String, val main: CardSet, val side: CardSet, val extra: CardSet) {
 
     companion object {
-        fun fromYdk(path: Path, db: CardDB): Deck {
-            throw NotImplementedError()
+        private val MAIN_LINE: String = "#main"
+        private val EXTRA_LINE: String = "#extra"
+        private val SIDE_LINE: String = "!side"
+
+        fun empty(name: String): Deck = Deck(name, CardSet(), CardSet(), CardSet())
+
+        fun fromYdk(file: Path, db: CardDB): Deck {
+            if (!file.exists()) {
+                throw IllegalArgumentException("The provided file does not exist!")
+            }
+
+            val fileStr = file.toString()
+            if (!fileStr.toUpperCase().endsWith(".YDK")) {
+                throw IllegalArgumentException("The provided file is not a ydk file.")
+            }
+
+            val deck = Deck.empty(fileStr.substring(0, fileStr.length - 4)) // 4 is the length of ".ydk"
+            var inMain: Boolean = false
+            var inExtra: Boolean = false
+            var inSide: Boolean = false
+            for (line in file.lines()) {
+                val trimmed = line.trim()
+                if (trimmed.isEmpty()) {
+                    continue
+                }
+
+                when (trimmed) {
+                    MAIN_LINE -> {
+                        inMain = true
+                        inExtra = false
+                        inSide = false
+                    }
+                    EXTRA_LINE -> {
+                        inMain = false
+                        inExtra = true
+                        inSide = false
+                    }
+                    SIDE_LINE -> {
+                        inMain = false
+                        inExtra = false
+                        inSide = true
+                    }
+                    else -> {
+                        val card: Card? = try {
+                            db[line.toInt()]
+                        } catch (ex: Exception) {
+                            null
+                        }
+
+                        if (card != null) {
+                            when {
+                                inMain -> deck.main.add(card)
+                                inExtra -> deck.extra.add(card)
+                                inSide -> deck.side.add(card)
+                            }
+                        }
+                    }
+                }
+            }
+
+            return deck
         }
     }
+
 }
