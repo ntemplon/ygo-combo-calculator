@@ -1,9 +1,8 @@
 package com.croffgrin.ygocalc.card
 
+import com.croffgrin.ygocalc.util.exists
 import org.sqlite.JDBC
-import java.nio.file.Path
 import java.nio.file.Paths
-import java.sql.Connection
 import java.sql.DriverManager
 
 /**
@@ -24,7 +23,8 @@ import java.sql.DriverManager
  * IN THE SOFTWARE.
  */
 /**
- * A class representing a DevPro/YGOPro card database.
+ * A class representing a DevPro/YGOPro card database (cdb).
+ * @property filePath the path to the file where the database is located.
  */
 class CardDB(val filePath: String) {
 
@@ -36,12 +36,15 @@ class CardDB(val filePath: String) {
      * Loads the cards from the database at [filePath].
      */
     fun load() {
-        Class.forName(JDBC::class.java.name) // Loads the class we need  to use as the db driver
-
-        val workDir = Paths.get(".")
-        val target = Paths.get(filePath)
+        val workDir = Paths.get(".").toAbsolutePath()
+        val target = Paths.get(filePath).toAbsolutePath()
         val open = workDir.relativize(target)
 
+        if (!open.exists()) {
+            throw IllegalStateException("Cannot open file ${open.toString()} because it does not exist.")
+        }
+
+        Class.forName(JDBC::class.java.name) // Loads the class we need  to use as the db driver
         val connect = DriverManager.getConnection("jdbc:sqlite:${open.toString()}")
 
         val st = connect.createStatement()
@@ -85,8 +88,19 @@ class CardDB(val filePath: String) {
         }
     }
 
+    /**
+     * Gets a [Card] with a provided id
+     * @param id the id of the desired [Card]
+     * @return the [Card] with the provided id, or null if there is none
+     */
     operator fun get(id: Int): Card? = this._cards[id]
-    operator fun get(name: String): List<Card>? = this._cardsByName[name]
+
+    /**
+     * Gets all [Card]s with a provided name
+     * @param name the name of the desired [Card]s
+     * @return the [Card]s with the provided name, or an empty list if there are none
+     */
+    operator fun get(name: String): List<Card> = this._cardsByName[name] ?: listOf()
 
 
     companion object {

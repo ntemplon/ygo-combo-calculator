@@ -3,14 +3,11 @@ package com.croffgrin.ygocalc
 import com.croffgrin.ygocalc.card.CardDB
 import com.croffgrin.ygocalc.card.Deck
 import com.croffgrin.ygocalc.gui.DeckViewer
+import com.croffgrin.ygocalc.gui.Gui
+import com.croffgrin.ygocalc.io.Filters
 import java.awt.Dimension
-import java.io.File
 import java.nio.file.Paths
 import javax.swing.JFileChooser
-import javax.swing.JFrame
-import javax.swing.JOptionPane
-import javax.swing.UIManager
-import javax.swing.filechooser.FileFilter
 
 /**
  * Copyright (c) 2016 Nathan S. Templon
@@ -30,30 +27,18 @@ import javax.swing.filechooser.FileFilter
  * IN THE SOFTWARE.
  */
 fun main(args: Array<String>) {
-    val popup: (String) -> Unit = { msg -> JOptionPane.showMessageDialog(null, msg) }
+    Gui.configureGuiSettings()
 
-    configureGui()
-
-    val testPath = "..\\..\\HDD Programs\\YGOPro DevPro\\cards.cdb"
+    //val testPath = "..\\..\\HDD Programs\\YGOPro DevPro\\cards.cdb"
+    val testPath = "/media/nathan/Data/HDD Programs/YGOPro DevPro/cards.cdb"
     val db = CardDB(testPath)
     db.load()
 
     // Open deck
-    val chooser = JFileChooser()
-    chooser.apply {
-        fileFilter = object : FileFilter() {
-            override fun accept(f: File): Boolean {
-                if (f.isDirectory) {
-                    return true
-                } else {
-                    return f.extension.toLowerCase() == "ydk"
-                }
-            }
-
-            override fun getDescription(): String = "YDK Files (*.ydk)"
-        }
-
-        currentDirectory = Paths.get("D:\\HDD Programs\\YGOPro DevPro\\deck").toFile()
+    val chooser = JFileChooser().apply {
+        fileFilter = Filters.YdkFilter
+        //currentDirectory = Paths.get("D:\\HDD Programs\\YGOPro DevPro\\deck").toFile()
+        currentDirectory = Paths.get("/media/nathan/Data/HDD Programs/YGOPro DevPro/deck").toFile()
         preferredSize = Dimension(1000, 700)
     }
 
@@ -64,32 +49,4 @@ fun main(args: Array<String>) {
         val viewer = DeckViewer(deck)
         viewer.isVisible = true
     }
-}
-
-
-private fun configureGui() {
-    // Enable hardware acceleration
-    System.setProperty("sun.java2d.opengl", "true")
-
-    // Set look and feel
-    try {
-        UIManager.setLookAndFeel(GuiConstants.LAF_NAME)
-    } catch (ex: Exception) {
-
-    }
-}
-
-
-object GuiConstants {
-    private val NIMBUS: String? = UIManager.getInstalledLookAndFeels().firstOrNull { info -> info.getName().equals("Nimbus") }?.className
-    private val METAL: String? = UIManager.getInstalledLookAndFeels().firstOrNull { info -> info.getName().equals("Metal") }?.className
-    private val MOTIF: String? = UIManager.getInstalledLookAndFeels().firstOrNull { info -> info.getName().equals("Motif") }?.className
-    private val NATIVE: String? = UIManager.getSystemLookAndFeelClassName()
-    private val PREFERENCE_ORDER = listOf(
-            NATIVE,
-            NIMBUS,
-            METAL,
-            MOTIF
-    )
-    val LAF_NAME: String = PREFERENCE_ORDER.first { it != null } ?: ""
 }
