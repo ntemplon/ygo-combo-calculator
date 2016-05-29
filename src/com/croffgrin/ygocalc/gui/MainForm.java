@@ -1,5 +1,8 @@
 package com.croffgrin.ygocalc.gui;
 
+import com.croffgrin.ygocalc.YgoCalc;
+import com.croffgrin.ygocalc.card.Deck;
+
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
@@ -22,9 +25,31 @@ import java.awt.event.WindowEvent;
  * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
  * IN THE SOFTWARE.
  */
-public class MainForm extends YgoCalcFormBase {
+public class MainForm extends JFrame {
 
-    private JPanel panel1;
+    private JPanel mainPanel;
+    private JPanel dbBar;
+    private JLabel dbLabel;
+    private JTextField dbField;
+    private JButton dbButton;
+
+    // Properties
+    public String getDatabase() {
+        return this.dbField.getText();
+    }
+
+    public void setDatabase(String database) {
+        this.dbField.setText(database);
+    }
+
+    public void setDatabaseValid(Boolean valid) {
+        if (valid) {
+            this.dbField.setForeground(Color.BLACK);
+        } else {
+            this.dbField.setForeground(Color.RED);
+        }
+    }
+
 
     public MainForm() {
         super("Ygo Combo Calculator");
@@ -52,13 +77,15 @@ public class MainForm extends YgoCalcFormBase {
         menuBar.add(editMenu);
 
         this.setJMenuBar(menuBar);
-        this.setContentPane(this.panel1);
+        this.setContentPane(this.mainPanel);
 
         this.setSize(new Dimension(1000, 700));
+
+        this.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
     }
 
     private void openMenuItemClicked(ActionEvent e) {
-
+        Deck.DeckOption option = YgoCalc.INSTANCE.openDeck();
     }
 
     private void exitMenuItemClicked(ActionEvent e) {

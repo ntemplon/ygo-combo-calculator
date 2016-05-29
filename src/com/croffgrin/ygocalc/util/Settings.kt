@@ -1,5 +1,6 @@
 package com.croffgrin.ygocalc.util
 
+import java.awt.Dimension
 import java.nio.file.Files
 import java.nio.file.Path
 
@@ -26,7 +27,8 @@ import java.nio.file.Path
  */
 class Settings {
 
-    var database: String = "./cards.cdb"
+    var database: String = DefaultDatabase
+    var chooserSize: Dimension = DefaultChooserSize
 
 
     fun write() {
@@ -39,22 +41,33 @@ class Settings {
     }
 
     companion object {
+        val SETTINGS_FILE: Path = System.getProperty("user.home").toPath().resolve("YgoCalc").resolve("Settings.cfg");
+
         private val SEPARATOR: String = "="
         private val DATABASE_PATH_KEY: String = "DATABASE_PATH" + SEPARATOR
-        private val SETTINGS_FILE: Path = System.getProperty("user.home").toPath().resolve("YgoCalc").resolve("Settings.cfg");
+        private val CHOOSER_WIDTH_KEY: String = "CHOOSER_WIDTH" + SEPARATOR
+        private val CHOOSER_HEIGHT_KEY: String = "CHOOSER_HEIGHT" + SEPARATOR
+
+        private val DefaultDatabase: String = "./cards.cdb"
+        private val DefaultChooserSize: Dimension = Dimension(1000, 700)
 
         fun read(): Settings {
             val settings = Settings()
 
             if (!SETTINGS_FILE.exists()) {
-                return Settings()
+                return settings
             }
 
+            var chooserWidth: Int = DefaultChooserSize.width
+            var chooserHeight: Int = DefaultChooserSize.height
             for (line in SETTINGS_FILE.lines()) {
                 when {
-                    line.startsWith(DATABASE_PATH_KEY) -> settings.database = line.substring(0, DATABASE_PATH_KEY.length).trim()
+                    line.startsWith(DATABASE_PATH_KEY) -> settings.database = line.substring(DATABASE_PATH_KEY.length).trim()
+                    line.startsWith(CHOOSER_WIDTH_KEY) -> chooserWidth = line.substring(CHOOSER_WIDTH_KEY.length).trim().toInt()
+                    line.startsWith(CHOOSER_HEIGHT_KEY) -> chooserHeight = line.substring(CHOOSER_HEIGHT_KEY.length).trim().toInt()
                 }
             }
+            settings.chooserSize = Dimension(chooserWidth, chooserHeight)
 
             return settings
         }

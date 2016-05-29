@@ -5,8 +5,6 @@ import com.croffgrin.ygocalc.card.Deck;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 
 /**
  * Copyright (c) 2016 Nathan S. Templon
@@ -25,7 +23,7 @@ import java.awt.event.ActionListener;
  * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
  * IN THE SOFTWARE.
  */
-public class DeckViewer extends YgoCalcFormBase {
+public class DeckViewer extends JFrame {
     private final Deck deck;
 
     private JList<Card> mainList;
@@ -45,13 +43,11 @@ public class DeckViewer extends YgoCalcFormBase {
         this.closeButton.addActionListener(e -> this.dispose());
         this.setContentPane(this.mainPanel);
         this.setSize(new Dimension(1200, 700));
+
+        this.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
     }
 
     public Deck getDeck() {
         return this.deck;
-    }
-
-    private void createUIComponents() {
-        // TODO: place custom component creation code here
     }
 }

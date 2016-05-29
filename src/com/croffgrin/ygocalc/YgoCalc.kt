@@ -2,12 +2,13 @@ package com.croffgrin.ygocalc
 
 import com.croffgrin.ygocalc.card.CardDB
 import com.croffgrin.ygocalc.card.Deck
-import com.croffgrin.ygocalc.gui.DeckViewer
 import com.croffgrin.ygocalc.gui.Gui
 import com.croffgrin.ygocalc.gui.MainForm
 import com.croffgrin.ygocalc.io.Filters
 import com.croffgrin.ygocalc.util.Settings
-import java.awt.Dimension
+import com.croffgrin.ygocalc.util.exists
+import java.awt.event.WindowAdapter
+import java.awt.event.WindowEvent
 import java.nio.file.Paths
 import javax.swing.JFileChooser
 
@@ -30,54 +31,75 @@ import javax.swing.JFileChooser
  */
 object YgoCalc {
 
-    private val db: CardDB? = null
+    private val form: MainForm = MainForm().apply {
+        addWindowListener(YgoFormListener)
+    }
 
-    fun openDeck(): Deck {
-        if (db == null) return Deck.empty("NO DATABASE LOADED")
+    private var db: CardDB? = null
+    private var settings: Settings = Settings()
+
+
+    fun start() {
+        Gui.configureGuiSettings()
+        settings = Settings.read()
+        this.loadDB()
+        form.isVisible = true
+    }
+
+    fun close() {
+        settings.write()
+    }
+
+    fun openDeck(): Deck.DeckOption {
+        val db = this.db ?: return Deck.DeckOption.NoDatabaseLoaded()
 
         val chooser = JFileChooser().apply {
             fileFilter = Filters.YdkFilter
             currentDirectory = Paths.get("D:\\HDD Programs\\YGOPro DevPro\\deck\\").toFile()
-            preferredSize = Dimension(1000, 700)
+            preferredSize = settings.chooserSize
         }
 
         return if (chooser.showOpenDialog(null) == JFileChooser.APPROVE_OPTION) {
             val file = chooser.selectedFile
-            Deck.fromYdk(file.toPath(), db)
+            settings.chooserSize = chooser.size
+            Deck.DeckOption.DeckSelected(Deck.fromYdk(file.toPath(), db))
         } else {
-            Deck.empty("NO USER SELECTION")
+            Deck.DeckOption.NoUserSelection()
+        }
+    }
+
+    fun selectDB() {
+        val chooser = JFileChooser().apply {
+            fileFilter = Filters.CdbFilter
+            preferredSize = settings.chooserSize
+        }
+    }
+
+
+    // Private Methods
+    private fun loadDB() {
+        if (Paths.get(settings.database).exists()) {
+            this.db =  CardDB(settings.database)
+            this.form.setDatabaseValid(true)
+            this.form.database = settings.database
+        } else {
+            this.db = null
+            this.form.setDatabaseValid(false)
+            this.form.database = if (settings.database.trim().length > 0) {
+                settings.database
+            } else {
+                "No Database Loaded"
+            }
         }
     }
 }
 
+object YgoFormListener: WindowAdapter() {
+    override fun windowClosing(e: WindowEvent?) {
+        YgoCalc.close()
+    }
+}
+
 fun main(args: Array<String>) {
-    Gui.configureGuiSettings()
-
-    val settings = Settings.read()
-
-    val testPath = "..\\..\\HDD Programs\\YGOPro DevPro\\cards.cdb"
-    //val testPath = "/media/nathan/Data/HDD Programs/YGOPro DevPro/cards.cdb"
-    val db = CardDB(testPath)
-    db.load()
-
-    // Open deck
-    val chooser = JFileChooser().apply {
-        fileFilter = Filters.YdkFilter
-        currentDirectory = Paths.get("D:\\HDD Programs\\YGOPro DevPro\\deck\\").toFile()
-        //currentDirectory = Paths.get("/media/nathan/Data/HDD Programs/YGOPro DevPro/deck").toFile()
-        preferredSize = Dimension(1000, 700)
-    }
-
-    if (chooser.showOpenDialog(null) == JFileChooser.APPROVE_OPTION) {
-        val file = chooser.selectedFile
-        val deck = Deck.fromYdk(file.toPath(), db)
-
-        val viewer = DeckViewer(deck)
-        viewer.isVisible = true
-    }
-
-    settings.write()
-
-    val frm = MainForm()
-    frm.isVisible = true
+    YgoCalc.start()
 }

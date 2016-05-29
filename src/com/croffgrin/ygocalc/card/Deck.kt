@@ -88,4 +88,11 @@ class Deck private constructor(val name: String, val main: CardSet, val side: Ca
         }
     }
 
+
+    sealed class DeckOption(val exists: Boolean) {
+        class NoDatabaseLoaded(): DeckOption(false)
+        class NoUserSelection(): DeckOption(false)
+        class DeckSelected(val deck: Deck): DeckOption(false)
+    }
+
 }
