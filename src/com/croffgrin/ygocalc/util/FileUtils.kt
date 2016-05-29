@@ -2,6 +2,7 @@ package com.croffgrin.ygocalc.util
 
 import java.nio.file.Files
 import java.nio.file.Path
+import java.nio.file.Paths
 import java.util.stream.Stream
 
 /**
@@ -23,3 +24,6 @@ import java.util.stream.Stream
  */
 fun Path.exists(): Boolean = Files.exists(this)
 fun Path.lines(): Stream<String> = Files.lines(this)
+fun Path.writeAllLines(lines: Iterable<CharSequence>) = Files.write(this, lines)
+
+fun String.toPath(): Path = Paths.get(this)

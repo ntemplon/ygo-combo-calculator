@@ -2,9 +2,7 @@ package com.croffgrin.ygocalc.card
 
 import com.croffgrin.ygocalc.util.exists
 import com.croffgrin.ygocalc.util.lines
-import java.nio.file.Files
 import java.nio.file.Path
-import java.nio.file.Paths
 
 /**
  * Copyright (c) 2016 Nathan S. Templon

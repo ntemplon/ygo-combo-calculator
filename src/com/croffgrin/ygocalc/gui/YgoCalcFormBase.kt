@@ -1,6 +1,7 @@
 package com.croffgrin.ygocalc.gui
 
 import javax.swing.JFrame
+import javax.swing.JPanel
 
 /**
  * Copyright (c) 2016 Nathan S. Templon

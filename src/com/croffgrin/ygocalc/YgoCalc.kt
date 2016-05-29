@@ -4,7 +4,9 @@ import com.croffgrin.ygocalc.card.CardDB
 import com.croffgrin.ygocalc.card.Deck
 import com.croffgrin.ygocalc.gui.DeckViewer
 import com.croffgrin.ygocalc.gui.Gui
+import com.croffgrin.ygocalc.gui.MainForm
 import com.croffgrin.ygocalc.io.Filters
+import com.croffgrin.ygocalc.util.Settings
 import java.awt.Dimension
 import java.nio.file.Paths
 import javax.swing.JFileChooser
@@ -26,19 +28,43 @@ import javax.swing.JFileChooser
  * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
  * IN THE SOFTWARE.
  */
+object YgoCalc {
+
+    private val db: CardDB? = null
+
+    fun openDeck(): Deck {
+        if (db == null) return Deck.empty("NO DATABASE LOADED")
+
+        val chooser = JFileChooser().apply {
+            fileFilter = Filters.YdkFilter
+            currentDirectory = Paths.get("D:\\HDD Programs\\YGOPro DevPro\\deck\\").toFile()
+            preferredSize = Dimension(1000, 700)
+        }
+
+        return if (chooser.showOpenDialog(null) == JFileChooser.APPROVE_OPTION) {
+            val file = chooser.selectedFile
+            Deck.fromYdk(file.toPath(), db)
+        } else {
+            Deck.empty("NO USER SELECTION")
+        }
+    }
+}
+
 fun main(args: Array<String>) {
     Gui.configureGuiSettings()
 
-    //val testPath = "..\\..\\HDD Programs\\YGOPro DevPro\\cards.cdb"
-    val testPath = "/media/nathan/Data/HDD Programs/YGOPro DevPro/cards.cdb"
+    val settings = Settings.read()
+
+    val testPath = "..\\..\\HDD Programs\\YGOPro DevPro\\cards.cdb"
+    //val testPath = "/media/nathan/Data/HDD Programs/YGOPro DevPro/cards.cdb"
     val db = CardDB(testPath)
     db.load()
 
     // Open deck
     val chooser = JFileChooser().apply {
         fileFilter = Filters.YdkFilter
-        //currentDirectory = Paths.get("D:\\HDD Programs\\YGOPro DevPro\\deck").toFile()
-        currentDirectory = Paths.get("/media/nathan/Data/HDD Programs/YGOPro DevPro/deck").toFile()
+        currentDirectory = Paths.get("D:\\HDD Programs\\YGOPro DevPro\\deck\\").toFile()
+        //currentDirectory = Paths.get("/media/nathan/Data/HDD Programs/YGOPro DevPro/deck").toFile()
         preferredSize = Dimension(1000, 700)
     }
 
@@ -49,4 +75,9 @@ fun main(args: Array<String>) {
         val viewer = DeckViewer(deck)
         viewer.isVisible = true
     }
+
+    settings.write()
+
+    val frm = MainForm()
+    frm.isVisible = true
 }

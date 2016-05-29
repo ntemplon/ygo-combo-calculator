@@ -1,5 +1,8 @@
 package com.croffgrin.ygocalc.util
 
+import java.nio.file.Files
+import java.nio.file.Path
+
 /*
  * Copyright (c) 2016 Nathan S. Templon
  * 
@@ -23,4 +26,37 @@ package com.croffgrin.ygocalc.util
  */
 class Settings {
 
+    var database: String = "./cards.cdb"
+
+
+    fun write() {
+        val lines = listOf(
+            DATABASE_PATH_KEY + this.database
+        )
+
+        Files.createDirectories(SETTINGS_FILE.parent)
+        SETTINGS_FILE.writeAllLines(lines)
+    }
+
+    companion object {
+        private val SEPARATOR: String = "="
+        private val DATABASE_PATH_KEY: String = "DATABASE_PATH" + SEPARATOR
+        private val SETTINGS_FILE: Path = System.getProperty("user.home").toPath().resolve("YgoCalc").resolve("Settings.cfg");
+
+        fun read(): Settings {
+            val settings = Settings()
+
+            if (!SETTINGS_FILE.exists()) {
+                return Settings()
+            }
+
+            for (line in SETTINGS_FILE.lines()) {
+                when {
+                    line.startsWith(DATABASE_PATH_KEY) -> settings.database = line.substring(0, DATABASE_PATH_KEY.length).trim()
+                }
+            }
+
+            return settings
+        }
+    }
 }
