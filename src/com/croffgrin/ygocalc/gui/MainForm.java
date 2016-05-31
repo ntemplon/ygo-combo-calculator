@@ -1,9 +1,15 @@
 package com.croffgrin.ygocalc.gui;
 
 import com.croffgrin.ygocalc.YgoCalc;
+import com.croffgrin.ygocalc.card.CardDB;
 import com.croffgrin.ygocalc.card.Deck;
+import com.croffgrin.ygocalc.gui.component.VerticalDeckView;
+import com.croffgrin.ygocalc.util.ChangedArgs;
+import kotlin.Unit;
 
 import javax.swing.*;
+import javax.swing.border.Border;
+import javax.swing.border.TitledBorder;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.WindowEvent;
@@ -32,6 +38,12 @@ public class MainForm extends JFrame {
     private JLabel dbLabel;
     private JTextField dbField;
     private JButton dbButton;
+    private VerticalDeckView deckView;
+    private JPanel deckPanel;
+    private JTabbedPane tabbedPane;
+    private JList filterList;
+    private JButton createButton;
+    private JButton editButton;
 
     // Properties
     public String getDatabase() {
@@ -43,9 +55,12 @@ public class MainForm extends JFrame {
     }
 
     public void setDatabaseValid(Boolean valid) {
+        final Font font = this.dbField.getFont();
         if (valid) {
+            this.dbField.setFont(new Font(font.getName(), Font.PLAIN, font.getSize()));
             this.dbField.setForeground(Color.BLACK);
         } else {
+            this.dbField.setFont(new Font(font.getName(), Font.BOLD, font.getSize()));
             this.dbField.setForeground(Color.RED);
         }
     }
@@ -79,13 +94,38 @@ public class MainForm extends JFrame {
         this.setJMenuBar(menuBar);
         this.setContentPane(this.mainPanel);
 
+        // Button Listeners
+        this.dbButton.addActionListener(this::chooseDBClick);
+
+        // YGOCalc Listeners
+        YgoCalc.INSTANCE.getDbChanged().addListener(this::dbUpdated);
+        YgoCalc.INSTANCE.getDeckLoaded().addListener(this::deckLoaded);
+
         this.setSize(new Dimension(1000, 700));
 
         this.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
     }
 
+    public void loadDeck(Deck deck) {
+        this.deckView.setDeck(deck);
+
+        final Border border = this.deckPanel.getBorder();
+        if (border instanceof TitledBorder) {
+            String title;
+            if (deck != null) {
+                title = "Deck (" + deck.getName() + ")";
+            } else {
+                title = "Deck";
+            }
+            ((TitledBorder) border).setTitle(title);
+        }
+
+        this.revalidate();
+        this.repaint();
+    }
+
     private void openMenuItemClicked(ActionEvent e) {
-        Deck.DeckOption option = YgoCalc.INSTANCE.openDeck();
+        YgoCalc.INSTANCE.openDeck();
     }
 
     private void exitMenuItemClicked(ActionEvent e) {
@@ -94,5 +134,41 @@ public class MainForm extends JFrame {
 
     private void settingsMenuItemClicked(ActionEvent e) {
 
+    }
+
+    private void chooseDBClick(ActionEvent e) {
+        YgoCalc.INSTANCE.selectDB();
+    }
+
+    private kotlin.Unit dbUpdated(ChangedArgs<CardDB> args) {
+        if (args.getNewValue() != null) {
+            this.dbField.setText(args.getNewValue().getPath().toAbsolutePath().toString());
+
+            final CardDB.DBStates state = args.getNewValue().getState();
+            if (state.getHasValidData()) {
+                this.setDatabaseValid(true);
+                this.dbField.setToolTipText(null);
+            } else {
+                this.setDatabaseValid(false);
+                if (state == CardDB.DBStates.FILE_DOES_NOT_EXIST) {
+                    this.dbField.setToolTipText("The specified file does not exist.");
+                } else if (state == CardDB.DBStates.UNLOADED) {
+                    this.dbField.setToolTipText("The data from this database was not loaded.");
+                } else if (state == CardDB.DBStates.OTHER_ERROR) {
+                    this.dbField.setToolTipText("<html>An error was encountered during loading of type \"" + args.getNewValue().getLoadingException().getClass().getName() + ".\"" +
+                            "<br>Message:   " + args.getNewValue().getLoadingException().getMessage() + "</html>");
+                }
+            }
+        } else {
+            this.dbField.setText("No Database Loaded");
+            this.setDatabaseValid(false);
+        }
+
+        return Unit.INSTANCE;
+    }
+
+    private kotlin.Unit deckLoaded(ChangedArgs<Deck> args) {
+        this.loadDeck(args.getNewValue());
+        return Unit.INSTANCE;
     }
 }

@@ -1,5 +1,7 @@
 package com.croffgrin.ygocalc.card
 
+import java.util.*
+
 /**
  * Copyright (c) 2016 Nathan S. Templon
  *
@@ -24,7 +26,9 @@ package com.croffgrin.ygocalc.card
  */
 sealed class Card private constructor(val id: Int, val name: String, val description: String) {
 
-    class MonsterCard(id: Int, name: String, description: String, val attack: Int, val defense: Int): Card(id, name, description) {
+    val upperName: String = name.toUpperCase(Locale.US)
+
+    class MonsterCard(id: Int, name: String, description: String, val level: Int, val attack: Int, val defense: Int): Card(id, name, description) {
         override fun toString(): String = this.name + " [Monster]"
     }
 

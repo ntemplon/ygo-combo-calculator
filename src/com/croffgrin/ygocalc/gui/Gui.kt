@@ -1,5 +1,6 @@
 package com.croffgrin.ygocalc.gui
 
+import java.util.*
 import javax.swing.UIManager
 
 /*
@@ -30,10 +31,12 @@ object Gui {
         System.setProperty("sun.java2d.opengl", "true")
 
         // Set look and feel
-        try {
-            UIManager.setLookAndFeel(Gui.LAF_NAME)
-        } catch (ex: Exception) {
+        if (LAF_NAME != null) {
+            try {
+                UIManager.setLookAndFeel(Gui.LAF_NAME)
+            } catch (ex: Exception) {
 
+            }
         }
     }
 
@@ -41,11 +44,14 @@ object Gui {
     private val METAL: String? = UIManager.getInstalledLookAndFeels().firstOrNull { info -> info.name == "Metal" }?.className
     private val MOTIF: String? = UIManager.getInstalledLookAndFeels().firstOrNull { info -> info.name == "Motif" }?.className
     private val NATIVE: String? = UIManager.getSystemLookAndFeelClassName()
-    private val PREFERENCE_ORDER = listOf(
-            METAL,
-            NATIVE,
-            NIMBUS,
-            MOTIF
-    )
-    val LAF_NAME: String = PREFERENCE_ORDER.first { it != null } ?: ""
+    private val PREFERENCE_ORDER: List<String?> by lazy {
+        val os = System.getProperty("os.name").toLowerCase(Locale.US)
+        when {
+            os.contains("win") -> listOf(NATIVE, METAL, NIMBUS, MOTIF) // Windows
+            os.contains("mac") -> listOf(NATIVE, NIMBUS, METAL, MOTIF) // Mac OS X
+            os.contains("nix") || os.contains("nux") || os.contains("aix") || os.contains("sunos") -> listOf(METAL, NATIVE, NIMBUS, MOTIF) // Unix, Linux, or Solaris
+            else -> listOf(METAL, NIMBUS, MOTIF, NATIVE)
+        }
+    }
+    val LAF_NAME: String? = PREFERENCE_ORDER.first { it != null }
 }

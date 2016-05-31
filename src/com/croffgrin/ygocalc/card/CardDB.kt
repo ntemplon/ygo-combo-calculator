@@ -2,6 +2,7 @@ package com.croffgrin.ygocalc.card
 
 import com.croffgrin.ygocalc.util.exists
 import org.sqlite.JDBC
+import java.nio.file.Path
 import java.nio.file.Paths
 import java.sql.DriverManager
 
@@ -26,22 +27,43 @@ import java.sql.DriverManager
  * A class representing a DevPro/YGOPro card database (cdb).
  * @property filePath the path to the file where the database is located.
  */
-class CardDB(val filePath: String) {
+class CardDB(val path: Path) {
+
+    constructor(filePath: String): this(Paths.get(filePath)) {}
 
     private var _cards = mapOf<Int, Card>()
     private var _cardsByName = mapOf<String, List<Card>>()
+
+    var state: DBStates = DBStates.UNLOADED
+        get
+        private set
+    var loadingException: Exception? = null
+        get
+        private set
 
 
     /**
      * Loads the cards from the database at [filePath].
      */
     fun load() {
+        try {
+            this.loadInternal()
+        } catch (ex: Exception) {
+            this.state = DBStates.OTHER_ERROR
+            this.loadingException = ex
+        }
+    }
+
+    private fun loadInternal() {
+        this.loadingException = null
+
         val workDir = Paths.get(".").toAbsolutePath()
-        val target = Paths.get(filePath).toAbsolutePath()
+        val target = this.path.toAbsolutePath()
         val open = workDir.relativize(target)
 
         if (!open.exists()) {
-            throw IllegalStateException("Cannot open file ${open.toString()} because it does not exist.")
+            this.state = DBStates.FILE_DOES_NOT_EXIST
+            return
         }
 
         Class.forName(JDBC::class.java.name) // Loads the class we need  to use as the db driver
@@ -80,12 +102,19 @@ class CardDB(val filePath: String) {
         }
 
         this._cards = data.map { pair ->
-            pair.key to pair.value.buildCard()
-        }.toMap()
+            val card = pair.value.buildCard()
+            if (card != null) {
+                pair.key to card
+            } else {
+                null
+            }
+        }.filterNotNull().toMap()
 
         this._cardsByName = this._cards.values.groupBy {
             it.name
         }
+
+        this.state = DBStates.LOADED
     }
 
     /**
@@ -137,6 +166,13 @@ class CardDB(val filePath: String) {
         private val TEXTS_STR14 = "str14"
         private val TEXTS_STR15 = "str15"
         private val TEXTS_STR16 = "str16"
+    }
+
+    enum class DBStates(val hasValidData: Boolean) {
+        UNLOADED(false),
+        LOADED(true),
+        FILE_DOES_NOT_EXIST(false),
+        OTHER_ERROR(false)
     }
 
 }

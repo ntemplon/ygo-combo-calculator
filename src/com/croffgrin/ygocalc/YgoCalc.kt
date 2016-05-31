@@ -5,6 +5,8 @@ import com.croffgrin.ygocalc.card.Deck
 import com.croffgrin.ygocalc.gui.Gui
 import com.croffgrin.ygocalc.gui.MainForm
 import com.croffgrin.ygocalc.io.Filters
+import com.croffgrin.ygocalc.util.ChangedArgs
+import com.croffgrin.ygocalc.util.Event
 import com.croffgrin.ygocalc.util.Settings
 import com.croffgrin.ygocalc.util.exists
 import java.awt.event.WindowAdapter
@@ -31,40 +33,90 @@ import javax.swing.JFileChooser
  */
 object YgoCalc {
 
-    private val form: MainForm = MainForm().apply {
+    // Fields
+    private val form: MainForm by lazy { MainForm().apply {
         addWindowListener(YgoFormListener)
-    }
-
+    }}
     private var db: CardDB? = null
+        get() = field
+        set(value) {
+            val oldValue = field
+            field = value
+
+            // Update Settings
+            if (value != null) {
+                settings.database = value.path.toAbsolutePath().toString()
+            } else {
+                settings.database = ""
+            }
+
+            // Inform Listeners
+            this.dbChangedEvent.dispatch(ChangedArgs(oldValue, value))
+        }
+    private var deck: Deck? = null
+        get() = field
+        set(value) {
+            val oldValue = field
+            field = value
+
+            this.deckLoadedEvent.dispatch(ChangedArgs(oldValue, value))
+        }
     private var settings: Settings = Settings()
 
 
+    // Events
+    private val dbChangedEvent = Event<ChangedArgs<CardDB?>>()
+    val dbChanged = this.dbChangedEvent.handle
+    private val deckLoadedEvent = Event<ChangedArgs<Deck?>>()
+    val deckLoaded = this.deckLoadedEvent.handle
+
+
+    // Initialization
+    init {
+        this.dbChanged.addListener { this.deck = null }
+    }
+
+
+    // Public Methods
     fun start() {
         Gui.configureGuiSettings()
         settings = Settings.read()
+
+        form.pack()
+        form.size = settings.windowSize
+        form.setLocation(settings.windowX, settings.windowY)
+
         this.loadDB()
+        this.loadDeck()
         form.isVisible = true
     }
 
     fun close() {
+        settings.windowSize = form.size
+        settings.windowX = form.x
+        settings.windowY = form.y
         settings.write()
     }
 
-    fun openDeck(): Deck.DeckOption {
-        val db = this.db ?: return Deck.DeckOption.NoDatabaseLoaded()
+    fun openDeck() {
+        val db = this.db ?: return
 
         val chooser = JFileChooser().apply {
             fileFilter = Filters.YdkFilter
-            currentDirectory = Paths.get("D:\\HDD Programs\\YGOPro DevPro\\deck\\").toFile()
+            val lastDeck = Paths.get(settings.lastDeck)
+            if (lastDeck.exists()) {
+                currentDirectory = lastDeck.parent.toFile()
+            }
+            //currentDirectory = Paths.get("D:\\HDD Programs\\YGOPro DevPro\\deck\\").toFile()
             preferredSize = settings.chooserSize
         }
 
-        return if (chooser.showOpenDialog(null) == JFileChooser.APPROVE_OPTION) {
+        if (chooser.showOpenDialog(null) == JFileChooser.APPROVE_OPTION) {
             val file = chooser.selectedFile
-            settings.chooserSize = chooser.size
-            Deck.DeckOption.DeckSelected(Deck.fromYdk(file.toPath(), db))
-        } else {
-            Deck.DeckOption.NoUserSelection()
+            val path = file.toPath()
+            this.deck = Deck.fromYdk(path, db)
+
+            settings.lastDeck = path.toString()
         }
     }
 
@@ -73,22 +125,45 @@ object YgoCalc {
             fileFilter = Filters.CdbFilter
             preferredSize = settings.chooserSize
         }
+
+        val chosenDB: String = if (chooser.showOpenDialog(this.form) == JFileChooser.APPROVE_OPTION) {
+            chooser.selectedFile.toString()
+        } else {
+            return
+        }
+
+        this.settings.database = chosenDB
+
+        val db = CardDB(chosenDB)
+        db.load()
+        this.db = db
     }
 
 
     // Private Methods
     private fun loadDB() {
-        if (Paths.get(settings.database).exists()) {
-            this.db =  CardDB(settings.database)
-            this.form.setDatabaseValid(true)
-            this.form.database = settings.database
+        val settingsPath = Paths.get(settings.database)
+        val defaultPath = Paths.get(Settings.DefaultDatabase)
+
+        val db = if (settingsPath.exists() || !defaultPath.exists()) {
+            CardDB(settingsPath)
         } else {
-            this.db = null
-            this.form.setDatabaseValid(false)
-            this.form.database = if (settings.database.trim().length > 0) {
-                settings.database
-            } else {
-                "No Database Loaded"
+            CardDB(defaultPath)
+        }
+
+        db.load()
+        this.db = db
+    }
+
+    private fun loadDeck() {
+        val settingsPath = Paths.get(settings.lastDeck)
+        val db = this.db
+        if (settingsPath.exists() && db != null) {
+            try {
+                this.deck = Deck.fromYdk(settingsPath, db)
+            } catch (ex: Exception) {
+
+                this.deck = null
             }
         }
     }

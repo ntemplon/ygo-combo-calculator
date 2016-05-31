@@ -40,7 +40,7 @@ class Deck private constructor(val name: String, val main: CardSet, val side: Ca
                 throw IllegalArgumentException("The provided file is not a ydk file.")
             }
 
-            val deck = Deck.empty(fileStr.substring(0, fileStr.length - 4)) // 4 is the length of ".ydk"
+            val deck = Deck.empty(file.fileName.toString())
             var inMain: Boolean = false
             var inExtra: Boolean = false
             var inSide: Boolean = false

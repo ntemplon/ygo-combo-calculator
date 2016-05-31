@@ -141,14 +141,14 @@ class CardData(val id: Int) {
     /**
      * Converts the data stored in this object into a new Card
      */
-    fun buildCard(): Card = when {
+    fun buildCard(): Card? = when {
         this.type.isMonster() -> buildMonster()
         this.type.isSpell() -> buildSpell()
         this.type.isTrap() -> buildTrap()
-        else -> throw IllegalStateException("Type is not Monster, Spell, or Trap.")
+        else -> null // throw IllegalStateException("Type of \"${this.name}\" is not Monster, Spell, or Trap.")
     }
 
-    private fun buildMonster(): Card = Card.MonsterCard(this.id, this.name, this.desc, this.atk, this.def)
+    private fun buildMonster(): Card = Card.MonsterCard(this.id, this.name, this.desc, this.level, this.atk, this.def)
 
     private fun buildSpell(): Card = Card.SpellCard(this.id, this.name, this.desc, spellType(this.type))
 

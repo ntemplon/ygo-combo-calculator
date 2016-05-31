@@ -70,4 +70,9 @@ class CardSet {
 
     fun cardArray(): Array<Card> = this._cards.toTypedArray()
 
+
+    companion object {
+        fun empty(): CardSet = CardSet()
+    }
+
 }
