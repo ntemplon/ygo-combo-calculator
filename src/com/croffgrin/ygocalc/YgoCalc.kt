@@ -5,14 +5,12 @@ import com.croffgrin.ygocalc.card.Deck
 import com.croffgrin.ygocalc.gui.Gui
 import com.croffgrin.ygocalc.gui.MainForm
 import com.croffgrin.ygocalc.io.Filters
-import com.croffgrin.ygocalc.util.ChangedArgs
-import com.croffgrin.ygocalc.util.Event
-import com.croffgrin.ygocalc.util.Settings
-import com.croffgrin.ygocalc.util.exists
+import com.croffgrin.ygocalc.util.*
 import java.awt.event.WindowAdapter
 import java.awt.event.WindowEvent
 import java.nio.file.Paths
 import javax.swing.JFileChooser
+import javax.swing.JFrame
 
 /**
  * Copyright (c) 2016 Nathan S. Templon
@@ -103,11 +101,14 @@ object YgoCalc {
 
         val chooser = JFileChooser().apply {
             fileFilter = Filters.YdkFilter
-            val lastDeck = Paths.get(settings.lastDeck)
+            val lastDeck = Paths.get(settings.lastDeck).toAbsolutePath()
             if (lastDeck.exists()) {
-                currentDirectory = lastDeck.parent.toFile()
+                currentDirectory = if (lastDeck.isDirectory()) {
+                    lastDeck.toFile()
+                } else {
+                    lastDeck.parent.toFile()
+                }
             }
-            //currentDirectory = Paths.get("D:\\HDD Programs\\YGOPro DevPro\\deck\\").toFile()
             preferredSize = settings.chooserSize
         }
 
@@ -137,6 +138,11 @@ object YgoCalc {
         val db = CardDB(chosenDB)
         db.load()
         this.db = db
+    }
+
+    @JvmOverloads
+    fun editSettings(parent: JFrame? = null) {
+
     }
 
 

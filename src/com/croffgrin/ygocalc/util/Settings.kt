@@ -26,11 +26,12 @@ import java.nio.file.Path
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-class Settings {
+class Settings private constructor() {
 
     // Events
     var database: String = DefaultDatabase
     var lastDeck: String = DefaultLastDeck
+    var rememberWindow: Boolean = DefaultRememberWindow
     var windowSize: Dimension = DefaultWindowSize
     var windowX: Int = DefaultWindowX
     var windowY: Int = DefaultWindowY
@@ -41,6 +42,7 @@ class Settings {
         val lines = listOf(
                 DATABASE_PATH_KEY + this.database,
                 LAST_DECK_KEY + this.lastDeck,
+                REMEMBER_WINDOW_KEY + this.rememberWindow,
                 WINDOW_WIDTH_KEY + this.windowSize.width,
                 WINDOW_HEIGHT_KEY + this.windowSize.height,
                 WINDOW_X_KEY + this.windowX,
@@ -59,6 +61,7 @@ class Settings {
         private val SEPARATOR: String = "="
         private val DATABASE_PATH_KEY: String = "DATABASE_PATH" + SEPARATOR
         private val LAST_DECK_KEY: String = "LAST_DECK" + SEPARATOR
+        private val REMEMBER_WINDOW_KEY: String = "REMEMBER_WINDOW" + SEPARATOR
         private val WINDOW_WIDTH_KEY: String = "WINDOW_WIDTH" + SEPARATOR
         private val WINDOW_HEIGHT_KEY: String = "WINDOW_HEIGHT" + SEPARATOR
         private val WINDOW_X_KEY: String = "WINDOW_X" + SEPARATOR
@@ -68,10 +71,13 @@ class Settings {
 
         val DefaultDatabase: String = "./cards.cdb"
         val DefaultLastDeck: String = ""
+        val DefaultRememberWindow: Boolean = true
         val DefaultWindowSize: Dimension = Dimension(1000, 700)
         val DefaultWindowX: Int = 0
         val DefaultWindowY: Int = 0
         val DefaultChooserSize: Dimension = Dimension(1000, 700)
+
+        fun default(): Settings = Settings()
 
         fun read(): Settings {
             val settings = Settings()
@@ -88,6 +94,7 @@ class Settings {
                 when {
                     line.startsWith(DATABASE_PATH_KEY) -> settings.database = line.substring(DATABASE_PATH_KEY.length).trim()
                     line.startsWith(LAST_DECK_KEY) -> settings.lastDeck = line.substring(LAST_DECK_KEY.length).trim()
+                    line.startsWith(REMEMBER_WINDOW_KEY) -> settings.rememberWindow = line.substring(REMEMBER_WINDOW_KEY.length).trim().toBoolean()
                     line.startsWith(WINDOW_WIDTH_KEY) -> windowWidth = line.substring(WINDOW_WIDTH_KEY.length).trim().toInt()
                     line.startsWith(WINDOW_HEIGHT_KEY) -> windowHeight = line.substring(WINDOW_HEIGHT_KEY.length).trim().toInt()
                     line.startsWith(WINDOW_X_KEY) -> settings.windowX = line.substring(WINDOW_X_KEY.length).trim().toInt()
@@ -102,4 +109,17 @@ class Settings {
             return settings
         }
     }
+}
+
+class WindowSettings() {
+
+    var rememberSettings: Boolean = DefaultRememberSettings
+    var windowPosition: Point = DefaultWindowPosition
+
+    companion object {
+        val DefaultRememberSettings: Boolean = true
+        val DefaultWindowPosition: Point = Point(0, 0)
+        val DefaultWindowSize: Dimension = Dimension(500, 500)
+    }
+
 }

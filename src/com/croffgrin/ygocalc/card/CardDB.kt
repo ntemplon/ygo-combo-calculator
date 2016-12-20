@@ -57,7 +57,7 @@ class CardDB(val path: Path) {
     private fun loadInternal() {
         this.loadingException = null
 
-        val workDir = Paths.get(".").toAbsolutePath()
+        val workDir = Paths.get(".").toAbsolutePath().parent
         val target = this.path.toAbsolutePath()
         val open = workDir.relativize(target)
 

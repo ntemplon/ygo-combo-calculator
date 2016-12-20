@@ -23,6 +23,7 @@ import java.util.stream.Stream
  * IN THE SOFTWARE.
  */
 fun Path.exists(): Boolean = Files.exists(this)
+fun Path.isDirectory(): Boolean = Files.isDirectory(this)
 fun Path.lines(): Stream<String> = Files.lines(this)
 fun Path.writeAllLines(lines: Iterable<CharSequence>) = Files.write(this, lines)
 

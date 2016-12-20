@@ -4,7 +4,8 @@ import com.croffgrin.ygocalc.YgoCalc;
 import com.croffgrin.ygocalc.card.CardDB;
 import com.croffgrin.ygocalc.card.Deck;
 import com.croffgrin.ygocalc.gui.component.VerticalDeckView;
-import com.croffgrin.ygocalc.util.ChangedArgs;
+import com.croffgrin.ygocalc.util.*;
+import com.croffgrin.ygocalc.util.Event;
 import kotlin.Unit;
 
 import javax.swing.*;

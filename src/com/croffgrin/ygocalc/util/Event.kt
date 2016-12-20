@@ -45,4 +45,4 @@ class Event<T> {
 
 }
 
-data class ChangedArgs<T>(val oldValue: T, val newValue: T)
+data class ChangedArgs<out T>(val oldValue: T, val newValue: T)
