@@ -59,7 +59,7 @@ object YgoCalc {
 
             this.deckLoadedEvent.dispatch(ChangedArgs(oldValue, value))
         }
-    private var settings: Settings = Settings()
+    private var settings: Settings = Settings.default()
 
 
     // Events
