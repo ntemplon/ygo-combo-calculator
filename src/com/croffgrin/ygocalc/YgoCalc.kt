@@ -81,18 +81,16 @@ object YgoCalc {
         settings = Settings.read()
 
         form.pack()
-        form.size = settings.windowSize
-        form.setLocation(settings.windowX, settings.windowY)
-
+        if (settings.mainWindowSettings.rememberSettings) {
+            form.size = settings.mainWindowSettings.windowSize
+        }
         this.loadDB()
         this.loadDeck()
         form.isVisible = true
     }
 
     fun close() {
-        settings.windowSize = form.size
-        settings.windowX = form.x
-        settings.windowY = form.y
+        settings.mainWindowSettings = WindowSettings.fromWindow(form, settings.mainWindowSettings.rememberSettings)
         settings.write()
     }
 
