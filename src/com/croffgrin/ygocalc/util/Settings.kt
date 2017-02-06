@@ -1,9 +1,13 @@
 package com.croffgrin.ygocalc.util
 
+import com.croffgrin.ygocalc.io.IoUtil
+import com.croffgrin.ygocalc.io.readAllText
 import java.awt.Dimension
 import java.awt.Point
 import java.nio.file.Files
 import java.nio.file.Path
+import javax.swing.JFrame
+import javax.swing.JOptionPane
 
 /*
  * Copyright (c) 2016 Nathan S. Templon
@@ -28,31 +32,16 @@ import java.nio.file.Path
  */
 class Settings private constructor() {
 
-    // Events
     var database: String = DefaultDatabase
     var lastDeck: String = DefaultLastDeck
-    var rememberWindow: Boolean = DefaultRememberWindow
-    var windowSize: Dimension = DefaultWindowSize
-    var windowX: Int = DefaultWindowX
-    var windowY: Int = DefaultWindowY
+    var mainWindowSettings: WindowSettings = WindowSettings()
     var chooserSize: Dimension = DefaultChooserSize
 
 
     fun write() {
-        val lines = listOf(
-                DATABASE_PATH_KEY + this.database,
-                LAST_DECK_KEY + this.lastDeck,
-                REMEMBER_WINDOW_KEY + this.rememberWindow,
-                WINDOW_WIDTH_KEY + this.windowSize.width,
-                WINDOW_HEIGHT_KEY + this.windowSize.height,
-                WINDOW_X_KEY + this.windowX,
-                WINDOW_Y_KEY + this.windowY,
-                CHOOSER_WIDTH_KEY + this.chooserSize.width,
-                CHOOSER_HEIGHT_KEY + this.chooserSize.height
-        )
-
+        val text = IoUtil.gson.toJson(this)
         Files.createDirectories(SETTINGS_FILE.parent)
-        SETTINGS_FILE.writeAllLines(lines)
+        SETTINGS_FILE.writeAllLines(listOf(text))
     }
 
     companion object {
@@ -80,46 +69,35 @@ class Settings private constructor() {
         fun default(): Settings = Settings()
 
         fun read(): Settings {
-            val settings = Settings()
-
-            if (!SETTINGS_FILE.exists()) {
-                return settings
-            }
-
-            var windowWidth: Int = DefaultWindowSize.width
-            var windowHeight: Int = DefaultWindowSize.height
-            var chooserWidth: Int = DefaultChooserSize.width
-            var chooserHeight: Int = DefaultChooserSize.height
-            for (line in SETTINGS_FILE.lines()) {
-                when {
-                    line.startsWith(DATABASE_PATH_KEY) -> settings.database = line.substring(DATABASE_PATH_KEY.length).trim()
-                    line.startsWith(LAST_DECK_KEY) -> settings.lastDeck = line.substring(LAST_DECK_KEY.length).trim()
-                    line.startsWith(REMEMBER_WINDOW_KEY) -> settings.rememberWindow = line.substring(REMEMBER_WINDOW_KEY.length).trim().toBoolean()
-                    line.startsWith(WINDOW_WIDTH_KEY) -> windowWidth = line.substring(WINDOW_WIDTH_KEY.length).trim().toInt()
-                    line.startsWith(WINDOW_HEIGHT_KEY) -> windowHeight = line.substring(WINDOW_HEIGHT_KEY.length).trim().toInt()
-                    line.startsWith(WINDOW_X_KEY) -> settings.windowX = line.substring(WINDOW_X_KEY.length).trim().toInt()
-                    line.startsWith(WINDOW_Y_KEY) -> settings.windowY = line.substring(WINDOW_Y_KEY.length).trim().toInt()
-                    line.startsWith(CHOOSER_WIDTH_KEY) -> chooserWidth = line.substring(CHOOSER_WIDTH_KEY.length).trim().toInt()
-                    line.startsWith(CHOOSER_HEIGHT_KEY) -> chooserHeight = line.substring(CHOOSER_HEIGHT_KEY.length).trim().toInt()
+            if (SETTINGS_FILE.exists()) {
+                try {
+                    return IoUtil.gson.fromJson(SETTINGS_FILE.readAllText(), Settings::class.java)
+                } catch (ex: Exception) {
+                    JOptionPane.showMessageDialog(null, "Error encountered while reading settings file.  Using defaults.")
+                    return Settings.default()
                 }
+            } else {
+                return Settings.default()
             }
-            settings.windowSize = Dimension(windowWidth, windowHeight)
-            settings.chooserSize = Dimension(chooserWidth, chooserHeight)
-
-            return settings
         }
     }
 }
 
-class WindowSettings() {
-
-    var rememberSettings: Boolean = DefaultRememberSettings
-    var windowPosition: Point = DefaultWindowPosition
+data class WindowSettings(
+        val rememberSettings: Boolean = DefaultRememberSettings,
+        val windowPosition: Point = DefaultWindowPosition,
+        val windowSize: Dimension = DefaultWindowSize) {
 
     companion object {
         val DefaultRememberSettings: Boolean = true
         val DefaultWindowPosition: Point = Point(0, 0)
         val DefaultWindowSize: Dimension = Dimension(500, 500)
+
+        fun fromWindow(window: JFrame, rememberSettings: Boolean) = WindowSettings(
+                rememberSettings = rememberSettings,
+                windowPosition = Point(window.x, window.y),
+                windowSize = window.size
+        )
     }
 
 }
