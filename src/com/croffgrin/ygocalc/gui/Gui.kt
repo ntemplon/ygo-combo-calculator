@@ -1,6 +1,8 @@
 package com.croffgrin.ygocalc.gui
 
 import java.util.*
+import javax.swing.JComponent
+import javax.swing.JScrollPane
 import javax.swing.UIManager
 
 /*

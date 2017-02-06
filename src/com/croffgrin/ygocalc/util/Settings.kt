@@ -1,5 +1,6 @@
 package com.croffgrin.ygocalc.util
 
+import com.croffgrin.ygocalc.gui.component.ExceptionInfoDialog
 import com.croffgrin.ygocalc.io.IoUtil
 import com.croffgrin.ygocalc.io.readAllText
 import java.awt.Dimension
@@ -45,18 +46,7 @@ class Settings private constructor() {
     }
 
     companion object {
-        val SETTINGS_FILE: Path = System.getProperty("user.home").toPath().resolve("YgoCalc").resolve("Settings.cfg");
-
-        private val SEPARATOR: String = "="
-        private val DATABASE_PATH_KEY: String = "DATABASE_PATH" + SEPARATOR
-        private val LAST_DECK_KEY: String = "LAST_DECK" + SEPARATOR
-        private val REMEMBER_WINDOW_KEY: String = "REMEMBER_WINDOW" + SEPARATOR
-        private val WINDOW_WIDTH_KEY: String = "WINDOW_WIDTH" + SEPARATOR
-        private val WINDOW_HEIGHT_KEY: String = "WINDOW_HEIGHT" + SEPARATOR
-        private val WINDOW_X_KEY: String = "WINDOW_X" + SEPARATOR
-        private val WINDOW_Y_KEY: String = "WINDOW_Y" + SEPARATOR
-        private val CHOOSER_WIDTH_KEY: String = "CHOOSER_WIDTH" + SEPARATOR
-        private val CHOOSER_HEIGHT_KEY: String = "CHOOSER_HEIGHT" + SEPARATOR
+        val SETTINGS_FILE: Path = System.getProperty("user.home").toPath().resolve("YgoCalc").resolve("Settings.cfg")
 
         val DefaultDatabase: String = "./cards.cdb"
         val DefaultLastDeck: String = ""
@@ -73,7 +63,7 @@ class Settings private constructor() {
                 try {
                     return IoUtil.gson.fromJson(SETTINGS_FILE.readAllText(), Settings::class.java)
                 } catch (ex: Exception) {
-                    JOptionPane.showMessageDialog(null, "Error encountered while reading settings file.  Using defaults.")
+                    ExceptionInfoDialog(ex).isVisible = true
                     return Settings.default()
                 }
             } else {
