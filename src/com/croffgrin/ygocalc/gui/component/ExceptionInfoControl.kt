@@ -1,6 +1,7 @@
 package com.croffgrin.ygocalc.gui.component
 
 import java.awt.GridBagLayout
+import java.awt.Insets
 import javax.swing.*
 
 /**
@@ -30,26 +31,26 @@ class ExceptionInfoControl @JvmOverloads constructor(exception: Exception = Exce
         get() = field
         set(value) {
             field = value
-            this.typeTextField.text = value.javaClass.canonicalName
-            this.messageArea.text = value.message
-            this.stackTraceArea.text = value.stackTrace
-                    .map { it -> it.toString() }
-                    .joinToString(separator = System.lineSeparator())
+            this.computeText()
         }
 
     init {
         this.layout = GridBagLayout()
 
+        val standardInsets = Insets(3, 3, 3, 3)
+
         this.add(JLabel("Exception Type:"), java.awt.GridBagConstraints().apply {
             gridx = 1
             gridy = 1
             anchor = java.awt.GridBagConstraints.LINE_START
+            insets = standardInsets
         })
 
         this.add(this.typeTextField, java.awt.GridBagConstraints().apply {
             gridx = 2
             gridy = 1
             weightx = 1.0
+            insets = standardInsets
             fill = java.awt.GridBagConstraints.BOTH
         })
 
@@ -58,6 +59,7 @@ class ExceptionInfoControl @JvmOverloads constructor(exception: Exception = Exce
             gridy = 2
             gridwidth = 2
             anchor = java.awt.GridBagConstraints.LINE_START
+            insets = standardInsets
         })
 
         this.add(this.messageArea, java.awt.GridBagConstraints().apply {
@@ -65,6 +67,7 @@ class ExceptionInfoControl @JvmOverloads constructor(exception: Exception = Exce
             gridy = 3
             gridwidth = 2
             weightx = 1.0
+            insets = standardInsets
             fill = java.awt.GridBagConstraints.BOTH
         })
 
@@ -72,21 +75,36 @@ class ExceptionInfoControl @JvmOverloads constructor(exception: Exception = Exce
             gridx = 1
             gridy = 4
             anchor = java.awt.GridBagConstraints.LINE_START
+            insets = standardInsets
         })
 
-        this.add(JScrollPane(this.stackTraceArea), java.awt.GridBagConstraints().apply {
+        this.add(this.stackTraceArea, java.awt.GridBagConstraints().apply {
             gridx = 1
             gridy = 5
             gridwidth = 2
             weightx = 1.0
             weighty = 1.0
+            insets = standardInsets
             fill = java.awt.GridBagConstraints.BOTH
         })
+
+        this.computeText()
+    }
+
+
+    private fun computeText() {
+        this.typeTextField.text = this.exception.javaClass.canonicalName
+        this.messageArea.text = this.exception.message
+        this.stackTraceArea.text = this.exception.stackTrace
+                .map { it -> it.toString() }
+                .joinToString(separator = System.lineSeparator())
     }
 
 }
 
-class ExceptionInfoDialog @JvmOverloads constructor(exception: Exception = Exception()) : JDialog() {
+class ExceptionInfoDialog @JvmOverloads constructor(exception: Exception = Exception(),
+                                                    parent: JFrame? = null,
+                                                    isModal: Boolean = true) : JDialog(parent, isModal) {
 
     private var exceptionInfoControl: ExceptionInfoControl = ExceptionInfoControl(exception)
 
@@ -95,4 +113,9 @@ class ExceptionInfoDialog @JvmOverloads constructor(exception: Exception = Excep
         set(value) {
             this.exceptionInfoControl.exception = value
         }
+
+    init {
+        this.contentPane = exceptionInfoControl
+        this.pack()
+    }
 }

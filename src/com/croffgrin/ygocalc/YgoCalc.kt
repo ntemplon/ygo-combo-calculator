@@ -4,6 +4,7 @@ import com.croffgrin.ygocalc.card.CardDB
 import com.croffgrin.ygocalc.card.Deck
 import com.croffgrin.ygocalc.gui.Gui
 import com.croffgrin.ygocalc.gui.MainForm
+import com.croffgrin.ygocalc.gui.component.ExceptionInfoDialog
 import com.croffgrin.ygocalc.io.Filters
 import com.croffgrin.ygocalc.util.*
 import java.awt.event.WindowAdapter
@@ -83,6 +84,7 @@ object YgoCalc {
         form.pack()
         if (settings.mainWindowSettings.rememberSettings) {
             form.size = settings.mainWindowSettings.windowSize
+            form.setLocation(settings.mainWindowSettings.windowPosition.x, settings.mainWindowSettings.windowPosition.y)
         }
         this.loadDB()
         this.loadDeck()
@@ -141,6 +143,12 @@ object YgoCalc {
     @JvmOverloads
     fun editSettings(parent: JFrame? = null) {
 
+    }
+
+    fun tester() {
+        val ex = IllegalArgumentException("No arguments!")
+        val dialog = ExceptionInfoDialog(ex, form, true)
+        dialog.isVisible = true
     }
 
 

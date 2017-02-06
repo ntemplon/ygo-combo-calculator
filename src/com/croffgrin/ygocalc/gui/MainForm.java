@@ -77,6 +77,9 @@ public class MainForm extends JFrame {
         JMenuItem openFileItem = new JMenuItem("Open");
         openFileItem.addActionListener(this::openMenuItemClicked);
         fileMenu.add(openFileItem);
+        JMenuItem runTesterItem = new JMenuItem("Run Tester");
+        runTesterItem.addActionListener(this::runTesterMenuItemClicked);
+        fileMenu.add(runTesterItem);
 
         fileMenu.add(new JPopupMenu.Separator());
         JMenuItem exitFileItem = new JMenuItem("Exit");
@@ -127,6 +130,10 @@ public class MainForm extends JFrame {
 
     private void openMenuItemClicked(ActionEvent e) {
         YgoCalc.INSTANCE.openDeck();
+    }
+
+    private void runTesterMenuItemClicked(ActionEvent e) {
+        YgoCalc.INSTANCE.tester();
     }
 
     private void exitMenuItemClicked(ActionEvent e) {
