@@ -107,7 +107,7 @@ public class MainForm extends JFrame {
 
         this.setSize(new Dimension(1000, 700));
 
-        this.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+        this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
     }
 
     public void loadDeck(Deck deck) {
