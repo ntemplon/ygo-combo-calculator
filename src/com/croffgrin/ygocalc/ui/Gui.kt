@@ -1,4 +1,4 @@
-package com.croffgrin.ygocalc.gui
+package com.croffgrin.ygocalc.ui
 
 import java.util.*
 import javax.swing.JComponent

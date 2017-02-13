@@ -1,8 +1,6 @@
-package com.croffgrin.ygocalc.gui.component
+package com.croffgrin.ygocalc.ui
 
-import com.croffgrin.ygocalc.util.Settings
-import java.awt.GridBagLayout
-import javax.swing.JPanel
+import javax.swing.JFrame
 
 /**
  * Copyright (c) 2016 Nathan Templon
@@ -21,16 +19,6 @@ import javax.swing.JPanel
  * OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  *
  */
-class EditSettingsPanel : JPanel() {
-
-    var settings: Settings = Settings.default()
-        get() = field
-        set(value) {
-            field = value
-        }
-
-    init {
-        this.layout = GridBagLayout()
-    }
+class EditSettingsForm : JFrame("Edit Settings") {
 
 }

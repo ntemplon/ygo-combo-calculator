@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<form xmlns="http://www.intellij.com/uidesigner/form/" version="1" bind-to-class="com.croffgrin.ygocalc.gui.MainForm">
+<form xmlns="http://www.intellij.com/uidesigner/form/" version="1" bind-to-class="com.croffgrin.ygocalc.ui.MainForm">
   <grid id="27dc6" binding="mainPanel" layout-manager="BorderLayout" hgap="0" vgap="0">
     <constraints>
       <xy x="20" y="20" width="661" height="467"/>
@@ -57,7 +57,7 @@
             <properties/>
             <border type="etched" title="Deck"/>
             <children>
-              <nested-form id="a2b2a" form-file="com/croffgrin/ygocalc/gui/component/VerticalDeckView.form" binding="deckView">
+              <nested-form id="a2b2a" form-file="com/croffgrin/ygocalc/ui/component/VerticalDeckView.form" binding="deckView">
                 <constraints>
                   <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
                 </constraints>

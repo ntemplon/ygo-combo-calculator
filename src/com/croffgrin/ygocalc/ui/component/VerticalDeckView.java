@@ -1,10 +1,9 @@
-package com.croffgrin.ygocalc.gui;
+package com.croffgrin.ygocalc.ui.component;
 
-import com.croffgrin.ygocalc.card.Card;
+import com.croffgrin.ygocalc.card.CardSet;
 import com.croffgrin.ygocalc.card.Deck;
 
 import javax.swing.*;
-import java.awt.*;
 
 /**
  * Copyright (c) 2016 Nathan S. Templon
@@ -23,31 +22,32 @@ import java.awt.*;
  * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
  * IN THE SOFTWARE.
  */
-public class DeckViewer extends JFrame {
-    private final Deck deck;
-
-    private JList<Card> mainList;
-    private JList<Card> extraList;
-    private JList<Card> sideList;
-    private JButton closeButton;
-    private JPanel mainPanel;
-
-    public DeckViewer(Deck deck) {
-        super(deck.getName());
-        this.deck = deck;
-
-        this.mainList.setListData(deck.getMain().cardArray());
-        this.extraList.setListData(deck.getExtra().cardArray());
-        this.sideList.setListData(deck.getSide().cardArray());
-
-        this.closeButton.addActionListener(e -> this.dispose());
-        this.setContentPane(this.mainPanel);
-        this.setSize(new Dimension(1200, 700));
-
-        this.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-    }
+public class VerticalDeckView {
+    private JPanel verticalDeckViewPanel;
+    private CardSetView mainView;
+    private CardSetView extraView;
+    private CardSetView sideView;
+    private Deck deck;
 
     public Deck getDeck() {
         return this.deck;
+    }
+
+    public void setDeck(Deck deck) {
+        if (deck != null) {
+            this.mainView.setCardSet(deck.getMain());
+            this.extraView.setCardSet(deck.getExtra());
+            this.sideView.setCardSet(deck.getSide());
+        } else {
+            this.mainView.setCardSet(CardSet.Companion.empty());
+            this.extraView.setCardSet(CardSet.Companion.empty());
+            this.sideView.setCardSet(CardSet.Companion.empty());
+        }
+    }
+
+    public VerticalDeckView() {
+        this.mainView.setName("Main");
+        this.extraView.setName("Extra");
+        this.sideView.setName("Side");
     }
 }

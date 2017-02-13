@@ -1,6 +1,6 @@
 package com.croffgrin.ygocalc.util
 
-import com.croffgrin.ygocalc.gui.component.ExceptionInfoDialog
+import com.croffgrin.ygocalc.ui.component.ExceptionInfoDialog
 import com.croffgrin.ygocalc.io.IoUtil
 import com.croffgrin.ygocalc.io.readAllText
 import java.awt.Dimension

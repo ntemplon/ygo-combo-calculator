@@ -1,4 +1,4 @@
-package com.croffgrin.ygocalc.gui.component
+package com.croffgrin.ygocalc.ui.component
 
 import java.awt.GridBagLayout
 import java.awt.Insets

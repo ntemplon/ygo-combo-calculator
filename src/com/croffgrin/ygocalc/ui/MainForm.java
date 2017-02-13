@@ -1,11 +1,10 @@
-package com.croffgrin.ygocalc.gui;
+package com.croffgrin.ygocalc.ui;
 
 import com.croffgrin.ygocalc.YgoCalc;
-import com.croffgrin.ygocalc.card.CardDB;
+import com.croffgrin.ygocalc.card.YgoProDB;
 import com.croffgrin.ygocalc.card.Deck;
-import com.croffgrin.ygocalc.gui.component.VerticalDeckView;
+import com.croffgrin.ygocalc.ui.component.VerticalDeckView;
 import com.croffgrin.ygocalc.util.*;
-import com.croffgrin.ygocalc.util.Event;
 import kotlin.Unit;
 
 import javax.swing.*;
@@ -148,21 +147,21 @@ public class MainForm extends JFrame {
         YgoCalc.INSTANCE.selectDB();
     }
 
-    private kotlin.Unit dbUpdated(ChangedArgs<CardDB> args) {
+    private kotlin.Unit dbUpdated(ChangedArgs<YgoProDB> args) {
         if (args.getNewValue() != null) {
             this.dbField.setText(args.getNewValue().getPath().toAbsolutePath().toString());
 
-            final CardDB.DBStates state = args.getNewValue().getState();
+            final YgoProDB.DBStates state = args.getNewValue().getState();
             if (state.getHasValidData()) {
                 this.setDatabaseValid(true);
                 this.dbField.setToolTipText(null);
             } else {
                 this.setDatabaseValid(false);
-                if (state == CardDB.DBStates.FILE_DOES_NOT_EXIST) {
+                if (state == YgoProDB.DBStates.FILE_DOES_NOT_EXIST) {
                     this.dbField.setToolTipText("The specified file does not exist.");
-                } else if (state == CardDB.DBStates.UNLOADED) {
+                } else if (state == YgoProDB.DBStates.UNLOADED) {
                     this.dbField.setToolTipText("The data from this database was not loaded.");
-                } else if (state == CardDB.DBStates.OTHER_ERROR) {
+                } else if (state == YgoProDB.DBStates.OTHER_ERROR) {
                     this.dbField.setToolTipText("<html>An error was encountered during loading of type \"" + args.getNewValue().getLoadingException().getClass().getName() + ".\"" +
                             "<br>Message:   " + args.getNewValue().getLoadingException().getMessage() + "</html>");
                 }

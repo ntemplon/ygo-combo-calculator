@@ -28,9 +28,9 @@ class Deck private constructor(val name: String, val main: CardSet, val side: Ca
         private val EXTRA_LINE: String = "#extra"
         private val SIDE_LINE: String = "!side"
 
-        fun empty(name: String): Deck = Deck(name, CardSet(), CardSet(), CardSet())
+        fun empty(name: String = ""): Deck = Deck(name, CardSet(), CardSet(), CardSet())
 
-        fun fromYdk(file: Path, db: CardDB): Deck {
+        fun fromYdk(file: Path, db: YgoProDB): Deck {
             if (!file.exists()) {
                 throw IllegalArgumentException("The provided file does not exist!")
             }
@@ -67,17 +67,19 @@ class Deck private constructor(val name: String, val main: CardSet, val side: Ca
                         inSide = true
                     }
                     else -> {
-                        val card: Card? = try {
-                            db[line.toInt()]
-                        } catch (ex: Exception) {
-                            null
-                        }
+                        val option: CardOption = db[line.toInt()]
 
-                        if (card != null) {
-                            when {
-                                inMain -> deck.main.add(card)
-                                inExtra -> deck.extra.add(card)
-                                inSide -> deck.side.add(card)
+                        when (option) {
+                            is CardOption.CardFoundOption -> {
+                                val card = option.card
+                                when {
+                                    inMain -> deck.main.add(card)
+                                    inExtra -> deck.extra.add(card)
+                                    inSide -> deck.side.add(card)
+                                }
+                            }
+                            is CardOption.CardNotFoundOption -> {
+
                             }
                         }
                     }
@@ -90,9 +92,9 @@ class Deck private constructor(val name: String, val main: CardSet, val side: Ca
 
 
     sealed class DeckOption(val exists: Boolean) {
-        class NoDatabaseLoaded(): DeckOption(false)
-        class NoUserSelection(): DeckOption(false)
-        class DeckSelected(val deck: Deck): DeckOption(false)
+        class NoDatabaseLoaded() : DeckOption(false)
+        class NoUserSelection() : DeckOption(false)
+        class DeckSelected(val deck: Deck) : DeckOption(false)
     }
 
 }

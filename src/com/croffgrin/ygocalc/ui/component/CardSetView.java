@@ -1,4 +1,4 @@
-package com.croffgrin.ygocalc.gui.component;
+package com.croffgrin.ygocalc.ui.component;
 
 import com.croffgrin.ygocalc.card.Card;
 import com.croffgrin.ygocalc.card.CardSet;

@@ -1,17 +1,19 @@
 package com.croffgrin.ygocalc
 
-import com.croffgrin.ygocalc.card.CardDB
+import com.croffgrin.ygocalc.card.YgoProDB
 import com.croffgrin.ygocalc.card.Deck
-import com.croffgrin.ygocalc.gui.Gui
-import com.croffgrin.ygocalc.gui.MainForm
-import com.croffgrin.ygocalc.gui.component.ExceptionInfoDialog
+import com.croffgrin.ygocalc.ui.Gui
+import com.croffgrin.ygocalc.ui.MainForm
+import com.croffgrin.ygocalc.ui.component.ExceptionInfoDialog
 import com.croffgrin.ygocalc.io.Filters
+import com.croffgrin.ygocalc.ui.builder.*
 import com.croffgrin.ygocalc.util.*
 import java.awt.event.WindowAdapter
 import java.awt.event.WindowEvent
 import java.nio.file.Paths
 import javax.swing.JFileChooser
 import javax.swing.JFrame
+import javax.swing.JMenu
 
 /**
  * Copyright (c) 2016 Nathan S. Templon
@@ -36,7 +38,7 @@ object YgoCalc {
     private val form: MainForm by lazy { MainForm().apply {
         addWindowListener(YgoFormListener)
     }}
-    private var db: CardDB? = null
+    private var db: YgoProDB? = null
         get() = field
         set(value) {
             val oldValue = field
@@ -52,7 +54,7 @@ object YgoCalc {
             // Inform Listeners
             this.dbChangedEvent.dispatch(ChangedArgs(oldValue, value))
         }
-    private var deck: Deck? = null
+    private var deck: Deck = Deck.empty()
         get() = field
         set(value) {
             val oldValue = field
@@ -62,17 +64,21 @@ object YgoCalc {
         }
     private var settings: Settings = Settings.default()
 
+    val debugMenu: JMenu = menu {
+        item("View Settings File") {  }
+    }
+
 
     // Events
-    private val dbChangedEvent = Event<ChangedArgs<CardDB?>>()
+    private val dbChangedEvent = Event<ChangedArgs<YgoProDB?>>()
     val dbChanged = this.dbChangedEvent.handle
-    private val deckLoadedEvent = Event<ChangedArgs<Deck?>>()
+    private val deckLoadedEvent = Event<ChangedArgs<Deck>>()
     val deckLoaded = this.deckLoadedEvent.handle
 
 
     // Initialization
     init {
-        this.dbChanged.addListener { this.deck = null }
+        this.dbChanged.addListener { this.deck = Deck.empty() }
     }
 
 
@@ -135,7 +141,7 @@ object YgoCalc {
 
         this.settings.database = chosenDB
 
-        val db = CardDB(chosenDB)
+        val db = YgoProDB(chosenDB)
         db.load()
         this.db = db
     }
@@ -158,9 +164,9 @@ object YgoCalc {
         val defaultPath = Paths.get(Settings.DefaultDatabase)
 
         val db = if (settingsPath.exists() || !defaultPath.exists()) {
-            CardDB(settingsPath)
+            YgoProDB(settingsPath)
         } else {
-            CardDB(defaultPath)
+            YgoProDB(defaultPath)
         }
 
         db.load()
@@ -174,8 +180,7 @@ object YgoCalc {
             try {
                 this.deck = Deck.fromYdk(settingsPath, db)
             } catch (ex: Exception) {
-
-                this.deck = null
+                this.deck = Deck.empty()
             }
         }
     }

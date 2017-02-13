@@ -1,4 +1,9 @@
-package com.croffgrin.ygocalc.card
+package com.croffgrin.ygocalc.ui.builder
+
+import java.awt.event.ActionEvent
+import javax.swing.JMenu
+import javax.swing.JMenuBar
+import javax.swing.JMenuItem
 
 /**
  * Copyright (c) 2017 Nathan Templon
@@ -17,13 +22,42 @@ package com.croffgrin.ygocalc.card
  * OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  *
  */
-abstract class CardDB {
-    abstract val cards: Iterable<Card>
-    abstract operator fun get(cardID: Int): CardOption
-    abstract operator fun get(cardName: String): Iterable<Card>
+fun menuBar(op: JMenuBar.() -> Unit): JMenuBar {
+    val menuBar = JMenuBar()
+    menuBar.op()
+    return menuBar
 }
 
-sealed class CardOption(val cardExists: Boolean) {
-    class CardFoundOption(val card: Card): CardOption(true)
-    class CardNotFoundOption(): CardOption(false)
+fun JMenuBar.menu(name: String = "", op: JMenu.() -> Unit) {
+    val menu = JMenu(name)
+    menu.op()
+    this.add(menu)
+}
+
+fun menu(name: String = "", op: JMenu.() -> Unit): JMenu {
+    val menu = JMenu(name)
+    menu.op()
+    return menu
+}
+
+fun JMenu.item(name: String = "", action: (ActionEvent) -> Unit) {
+    val menuItem = JMenuItem(name)
+    menuItem.addActionListener(action)
+    this.add(menuItem)
+}
+
+fun JMenu.subMenu(name: String = "", op: JMenuItem.() -> Unit) {
+    val menuItem = JMenuItem(name)
+    menuItem.op()
+    this.add(menuItem)
+}
+
+fun JMenuItem.item(name: String = "", action: (ActionEvent) -> Unit) {
+    val menuItem = JMenuItem(name)
+    menuItem.addActionListener(action)
+    this.add(menuItem)
+}
+
+fun JMenu.separator() {
+    this.addSeparator()
 }
