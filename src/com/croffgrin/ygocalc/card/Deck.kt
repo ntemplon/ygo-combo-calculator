@@ -24,26 +24,31 @@ import java.nio.file.Path
 class Deck private constructor(val name: String, val main: CardSet, val side: CardSet, val extra: CardSet) {
 
     companion object {
+        private enum class ParseStates {
+            MainDeck,
+            ExtraDeck,
+            SideDeck,
+            None
+        }
+
         private val MAIN_LINE: String = "#main"
         private val EXTRA_LINE: String = "#extra"
         private val SIDE_LINE: String = "!side"
 
         fun empty(name: String = ""): Deck = Deck(name, CardSet(), CardSet(), CardSet())
 
-        fun fromYdk(file: Path, db: YgoProDB): Deck {
+        fun fromYdk(file: Path, db: YgoProDB): DeckOption {
             if (!file.exists()) {
-                throw IllegalArgumentException("The provided file does not exist!")
+                return DeckOption.DeckNotRead("The provided file does not exist!")
             }
 
             val fileStr = file.toString()
             if (!fileStr.toUpperCase().endsWith(".YDK")) {
-                throw IllegalArgumentException("The provided file is not a ydk file.")
+                return DeckOption.DeckNotRead("The provided file is not a ydk file.")
             }
 
             val deck = Deck.empty(file.fileName.toString())
-            var inMain: Boolean = false
-            var inExtra: Boolean = false
-            var inSide: Boolean = false
+            var parseState: ParseStates = ParseStates.None
             for (line in file.lines()) {
                 val trimmed = line.trim()
                 if (trimmed.isEmpty()) {
@@ -52,19 +57,13 @@ class Deck private constructor(val name: String, val main: CardSet, val side: Ca
 
                 when (trimmed) {
                     MAIN_LINE -> {
-                        inMain = true
-                        inExtra = false
-                        inSide = false
+                        parseState = ParseStates.MainDeck
                     }
                     EXTRA_LINE -> {
-                        inMain = false
-                        inExtra = true
-                        inSide = false
+                        parseState = ParseStates.ExtraDeck
                     }
                     SIDE_LINE -> {
-                        inMain = false
-                        inExtra = false
-                        inSide = true
+                        parseState = ParseStates.SideDeck
                     }
                     else -> {
                         val option: CardOption = db[line.toInt()]
@@ -72,10 +71,11 @@ class Deck private constructor(val name: String, val main: CardSet, val side: Ca
                         when (option) {
                             is CardOption.CardFoundOption -> {
                                 val card = option.card
-                                when {
-                                    inMain -> deck.main.add(card)
-                                    inExtra -> deck.extra.add(card)
-                                    inSide -> deck.side.add(card)
+                                when(parseState) {
+                                    ParseStates.MainDeck -> deck.main.add(card)
+                                    ParseStates.ExtraDeck -> deck.extra.add(card)
+                                    ParseStates.SideDeck -> deck.side.add(card)
+                                    ParseStates.None -> { }
                                 }
                             }
                             is CardOption.CardNotFoundOption -> {
@@ -86,15 +86,14 @@ class Deck private constructor(val name: String, val main: CardSet, val side: Ca
                 }
             }
 
-            return deck
+            return DeckOption.DeckRead(deck)
         }
     }
 
 
     sealed class DeckOption(val exists: Boolean) {
-        class NoDatabaseLoaded() : DeckOption(false)
-        class NoUserSelection() : DeckOption(false)
-        class DeckSelected(val deck: Deck) : DeckOption(false)
+        class DeckRead(val deck: Deck): DeckOption(true)
+        class DeckNotRead(val message: String = ""): DeckOption(false)
     }
 
 }
