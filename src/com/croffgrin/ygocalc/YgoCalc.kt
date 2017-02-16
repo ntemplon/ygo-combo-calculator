@@ -121,7 +121,13 @@ object YgoCalc {
         if (chooser.showOpenDialog(null) == JFileChooser.APPROVE_OPTION) {
             val file = chooser.selectedFile
             val path = file.toPath()
-            this.deck = Deck.fromYdk(path, db)
+
+            val option = Deck.fromYdk(path, db)
+            if (option is Deck.DeckOption.DeckRead) {
+                this.deck = option.deck
+            } else {
+                this.deck = Deck.empty()
+            }
 
             settings.lastDeck = path.toString()
         }
@@ -178,7 +184,12 @@ object YgoCalc {
         val db = this.db
         if (settingsPath.exists() && db != null) {
             try {
-                this.deck = Deck.fromYdk(settingsPath, db)
+                val option = Deck.fromYdk(settingsPath, db)
+                if (option is Deck.DeckOption.DeckRead) {
+                    this.deck = option.deck
+                } else {
+                    this.deck = Deck.empty()
+                }
             } catch (ex: Exception) {
                 this.deck = Deck.empty()
             }
