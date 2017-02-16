@@ -23,6 +23,9 @@ import java.nio.file.Path
  */
 class Deck private constructor(val name: String, val main: CardSet, val side: CardSet, val extra: CardSet) {
 
+    val isEmpty: Boolean
+        get() = this.main.count == 0 && this.side.count == 0 && this.extra.count == 0
+
     companion object {
         private enum class ParseStates {
             MainDeck,
