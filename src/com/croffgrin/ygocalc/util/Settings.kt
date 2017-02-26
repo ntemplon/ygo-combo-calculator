@@ -1,8 +1,7 @@
 package com.croffgrin.ygocalc.util
 
+import com.croffgrin.ygocalc.io.*
 import com.croffgrin.ygocalc.ui.component.ExceptionInfoDialog
-import com.croffgrin.ygocalc.io.IoUtil
-import com.croffgrin.ygocalc.io.readAllText
 import java.awt.Dimension
 import java.awt.Point
 import java.nio.file.Files

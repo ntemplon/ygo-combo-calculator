@@ -1,7 +1,9 @@
 package com.croffgrin.ygocalc.card
 
-import com.croffgrin.ygocalc.util.exists
-import com.croffgrin.ygocalc.util.lines
+import com.croffgrin.ygocalc.io.exists
+import com.croffgrin.ygocalc.io.lines
+import com.croffgrin.ygocalc.util.shuffle
+import com.croffgrin.ygocalc.util.toIntOrNull
 import java.nio.file.Path
 
 /**
@@ -25,6 +27,16 @@ class Deck private constructor(val name: String, val main: CardSet, val side: Ca
 
     val isEmpty: Boolean
         get() = this.main.count == 0 && this.side.count == 0 && this.extra.count == 0
+
+    fun drawHand(handSize: Int = 5): GameState {
+        val orderedDeck = this.main.cards.toMutableList()
+        orderedDeck.shuffle()
+
+        val hand = orderedDeck.take(handSize)
+        val restOfDeck = orderedDeck.takeLast(orderedDeck.size - handSize)
+
+        return GameState(deck = restOfDeck, hand = hand, graveyard = listOf(), banished = listOf(), field = GameState.FieldState())
+    }
 
     companion object {
         private enum class ParseStates {
@@ -69,20 +81,23 @@ class Deck private constructor(val name: String, val main: CardSet, val side: Ca
                         parseState = ParseStates.SideDeck
                     }
                     else -> {
-                        val option: CardOption = db[line.toInt()]
+                        val index = line.toIntOrNull()
+                        if (index != null) {
+                            val option: CardOption = db[index]
 
-                        when (option) {
-                            is CardOption.CardFoundOption -> {
-                                val card = option.card
-                                when(parseState) {
-                                    ParseStates.MainDeck -> deck.main.add(card)
-                                    ParseStates.ExtraDeck -> deck.extra.add(card)
-                                    ParseStates.SideDeck -> deck.side.add(card)
-                                    ParseStates.None -> { }
+                            when (option) {
+                                is CardOption.CardFoundOption -> {
+                                    val card = option.card
+                                    when(parseState) {
+                                        ParseStates.MainDeck -> deck.main.add(card)
+                                        ParseStates.ExtraDeck -> deck.extra.add(card)
+                                        ParseStates.SideDeck -> deck.side.add(card)
+                                        ParseStates.None -> { }
+                                    }
                                 }
-                            }
-                            is CardOption.CardNotFoundOption -> {
+                                is CardOption.CardNotFoundOption -> {
 
+                                }
                             }
                         }
                     }

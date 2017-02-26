@@ -1,11 +1,4 @@
-package com.croffgrin.ygocalc.io
-
-import com.google.gson.Gson
-import com.google.gson.GsonBuilder
-import java.nio.file.Files
-import java.nio.file.Path
-import java.nio.file.Paths
-import java.util.stream.Stream
+package com.croffgrin.ygocalc.card
 
 /**
  * Copyright (c) 2017 Nathan Templon
@@ -24,16 +17,20 @@ import java.util.stream.Stream
  * OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  *
  */
-object IoUtil {
-    val gson: Gson = GsonBuilder().apply {
-        setPrettyPrinting()
-    }.create()
+class CompositeCombo(private val parts: List<PartialCombo>): Combo {
+
+    constructor(vararg parts: PartialCombo): this(parts.toList())
+
+    override fun canBePerformedBy(state: GameState): Boolean {
+        var availableStates = listOf(state)
+        for(pc in this.parts) {
+            availableStates = availableStates.flatMap { pc.remainderAfterAllocating(it) }
+        }
+        return availableStates.count() > 0
+    }
+
+    interface PartialCombo {
+        fun remainderAfterAllocating(startState: GameState): List<GameState>
+    }
+
 }
-
-fun Path.readAllText(): String = Files.readAllLines(this).joinToString(separator = System.lineSeparator())
-fun Path.exists(): Boolean = Files.exists(this)
-fun Path.isDirectory(): Boolean = Files.isDirectory(this)
-fun Path.lines(): Stream<String> = Files.lines(this)
-fun Path.writeAllLines(lines: Iterable<CharSequence>) = Files.write(this, lines)
-
-fun String.toPath(): Path = Paths.get(this)

@@ -1,11 +1,15 @@
 package com.croffgrin.ygocalc
 
+import com.croffgrin.ygocalc.card.Card
 import com.croffgrin.ygocalc.card.YgoProDB
 import com.croffgrin.ygocalc.card.Deck
+import com.croffgrin.ygocalc.card.SimpleCombo
 import com.croffgrin.ygocalc.ui.Gui
 import com.croffgrin.ygocalc.ui.MainForm
 import com.croffgrin.ygocalc.ui.component.ExceptionInfoDialog
 import com.croffgrin.ygocalc.io.Filters
+import com.croffgrin.ygocalc.io.exists
+import com.croffgrin.ygocalc.io.isDirectory
 import com.croffgrin.ygocalc.ui.builder.*
 import com.croffgrin.ygocalc.util.*
 import java.awt.event.WindowAdapter
@@ -14,6 +18,7 @@ import java.nio.file.Paths
 import javax.swing.JFileChooser
 import javax.swing.JFrame
 import javax.swing.JMenu
+import javax.swing.JOptionPane
 
 /**
  * Copyright (c) 2016 Nathan S. Templon
@@ -35,9 +40,11 @@ import javax.swing.JMenu
 object YgoCalc {
 
     // Fields
-    private val form: MainForm by lazy { MainForm().apply {
-        addWindowListener(YgoFormListener)
-    }}
+    private val form: MainForm by lazy {
+        MainForm().apply {
+            addWindowListener(YgoFormListener)
+        }
+    }
     private var db: YgoProDB? = null
         get() = field
         set(value) {
@@ -65,7 +72,7 @@ object YgoCalc {
     private var settings: Settings = Settings.default()
 
     val debugMenu: JMenu = menu {
-        item("View Settings File") {  }
+        item("View Settings File") { }
     }
 
 
@@ -158,9 +165,26 @@ object YgoCalc {
     }
 
     fun tester() {
-        val ex = IllegalArgumentException("No arguments!")
-        val dialog = ExceptionInfoDialog(ex, form, true)
-        dialog.isVisible = true
+        val combo = SimpleCombo({ it.name == "Lonefire Blossom" }, { it.name == "Soul Charge" || it.name == "Left Arm Offering" })
+        val gs = this.deck.drawHand(5)
+
+        val hand = gs.hand.map(Card::toString).joinToString(separator = System.lineSeparator())
+        val result = combo.canBePerformedBy(gs).toString()
+        val remainderCount = combo.remainderAfterAllocating(gs).count()
+
+        JOptionPane.showMessageDialog(null, hand + System.lineSeparator() + result + System.lineSeparator() + remainderCount)
+//        var count = 0
+//        var total = 0
+//
+//        for (i in 1..100000) {
+//            total++
+//            val gs = this.deck.drawHand(5)
+//            if (combo.canBePerformedBy(gs)) {
+//                count++
+//            }
+//        }
+//
+//        JOptionPane.showMessageDialog(null, (count.toDouble() / total.toDouble()).toString())
     }
 
 
@@ -197,7 +221,7 @@ object YgoCalc {
     }
 }
 
-object YgoFormListener: WindowAdapter() {
+object YgoFormListener : WindowAdapter() {
     override fun windowClosing(e: WindowEvent?) {
         YgoCalc.close()
     }

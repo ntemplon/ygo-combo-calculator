@@ -27,7 +27,7 @@ class Event<T> {
         this.listeners.forEach {
             try {
                 it.invoke(item)
-            } finally {
+            } catch(ex: Exception) {
 
             }
         }
@@ -37,10 +37,12 @@ class Event<T> {
         this.listeners.add(listener)
     }
 
-    class EventHandle<T> (private val event: Event<T>) {
+    class EventHandle<out T> (private val event: Event<T>) {
         fun addListener(listener: (T) -> Unit) {
             this.event.addListener(listener)
         }
+
+        operator fun plusAssign(listener: (T) -> Unit) = this.addListener(listener)
     }
 
 }

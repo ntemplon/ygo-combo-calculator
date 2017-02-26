@@ -1,11 +1,6 @@
-package com.croffgrin.ygocalc.io
+package com.croffgrin.ygocalc.util
 
-import com.google.gson.Gson
-import com.google.gson.GsonBuilder
-import java.nio.file.Files
-import java.nio.file.Path
-import java.nio.file.Paths
-import java.util.stream.Stream
+import java.util.*
 
 /**
  * Copyright (c) 2017 Nathan Templon
@@ -24,16 +19,7 @@ import java.util.stream.Stream
  * OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  *
  */
-object IoUtil {
-    val gson: Gson = GsonBuilder().apply {
-        setPrettyPrinting()
-    }.create()
+fun <T> MutableList<T>.shuffle(random: Random = Random()) {
+    Collections.shuffle(this, random)
+    Collections.shuffle(this)
 }
-
-fun Path.readAllText(): String = Files.readAllLines(this).joinToString(separator = System.lineSeparator())
-fun Path.exists(): Boolean = Files.exists(this)
-fun Path.isDirectory(): Boolean = Files.isDirectory(this)
-fun Path.lines(): Stream<String> = Files.lines(this)
-fun Path.writeAllLines(lines: Iterable<CharSequence>) = Files.write(this, lines)
-
-fun String.toPath(): Path = Paths.get(this)

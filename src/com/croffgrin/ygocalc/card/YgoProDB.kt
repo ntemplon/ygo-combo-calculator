@@ -1,6 +1,6 @@
 package com.croffgrin.ygocalc.card
 
-import com.croffgrin.ygocalc.util.exists
+import com.croffgrin.ygocalc.io.exists
 import org.sqlite.JDBC
 import java.nio.file.Path
 import java.nio.file.Paths
@@ -23,6 +23,7 @@ import java.sql.DriverManager
  * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
  * IN THE SOFTWARE.
  */
+
 /**
  * A class representing a DevPro/YGOPro card database (cdb).
  * @property filePath the path to the file where the database is located.

@@ -24,7 +24,8 @@ class CardSet {
     private val _cards = ArrayList<Card>(60)
 
     val cards: List<Card> = _cards
-    val count = this.cards.count()
+    val count: Int
+        get() = this.cards.count()
 
     /**
      * Indices go from 1 to [count]

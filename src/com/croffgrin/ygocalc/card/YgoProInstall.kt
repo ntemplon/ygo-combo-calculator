@@ -1,11 +1,7 @@
-package com.croffgrin.ygocalc.io
+package com.croffgrin.ygocalc.card
 
-import com.google.gson.Gson
-import com.google.gson.GsonBuilder
-import java.nio.file.Files
+import com.croffgrin.ygocalc.io.exists
 import java.nio.file.Path
-import java.nio.file.Paths
-import java.util.stream.Stream
 
 /**
  * Copyright (c) 2017 Nathan Templon
@@ -24,16 +20,15 @@ import java.util.stream.Stream
  * OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  *
  */
-object IoUtil {
-    val gson: Gson = GsonBuilder().apply {
-        setPrettyPrinting()
-    }.create()
+class YgoProInstall(val root: Path) {
+
+    val databaseLocation: Path = this.root.resolve(CardDatabase)
+    val database: CardDB by lazy { YgoProDB(this.databaseLocation) }
+
+    companion object {
+        val ExecutableFile: String = "ygopro.exe"
+        val CardDatabase: String = "cards.cdb"
+
+        fun isYgoProInstall(directory: Path) = directory.resolve(ExecutableFile).exists()
+    }
 }
-
-fun Path.readAllText(): String = Files.readAllLines(this).joinToString(separator = System.lineSeparator())
-fun Path.exists(): Boolean = Files.exists(this)
-fun Path.isDirectory(): Boolean = Files.isDirectory(this)
-fun Path.lines(): Stream<String> = Files.lines(this)
-fun Path.writeAllLines(lines: Iterable<CharSequence>) = Files.write(this, lines)
-
-fun String.toPath(): Path = Paths.get(this)
