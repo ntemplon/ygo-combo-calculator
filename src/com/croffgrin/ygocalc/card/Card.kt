@@ -24,7 +24,7 @@ import java.util.*
  * @property name The name of the card.
  * @property description The description of the card.
  */
-sealed class Card private constructor(val id: Int, val name: String, val description: String) {
+sealed class Card constructor(val id: Int, val name: String, val description: String) {
 
     val upperName: String = name.toUpperCase(Locale.US)
 
