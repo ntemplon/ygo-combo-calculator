@@ -24,10 +24,12 @@ class YgoProInstall(val root: Path) {
 
     val databaseLocation: Path = this.root.resolve(CardDatabase)
     val database: CardDB by lazy { YgoProDB(this.databaseLocation) }
+    val deckDirectory: Path = this.root.resolve(DeckDirectory)
 
     companion object {
         val ExecutableFile: String = "ygopro.exe"
         val CardDatabase: String = "cards.cdb"
+        val DeckDirectory: String = "deck"
 
         fun isYgoProInstall(directory: Path) = directory.resolve(ExecutableFile).exists()
     }

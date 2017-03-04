@@ -1,5 +1,7 @@
 package com.croffgrin.ygocalc.util
 
+import com.croffgrin.ygocalc.card.CardDB
+import com.croffgrin.ygocalc.card.YgoProInstall
 import com.croffgrin.ygocalc.io.*
 import com.croffgrin.ygocalc.ui.component.ExceptionInfoDialog
 import java.awt.Dimension
@@ -40,15 +42,17 @@ class Settings private constructor() {
 
     fun write() {
         val text = IoUtil.gson.toJson(this)
-        Files.createDirectories(SETTINGS_FILE.parent)
-        SETTINGS_FILE.writeAllLines(listOf(text))
+        Files.createDirectories(SettingsFile.parent)
+        SettingsFile.writeAllLines(listOf(text))
     }
 
     companion object {
-        val SETTINGS_FILE: Path = System.getProperty("user.home").toPath().resolve("YgoCalc").resolve("Settings.cfg")
+        val SettingsFile: Path = System.getProperty("user.home").toPath().resolve("YgoCalc").resolve("Settings.cfg")
 
         val DefaultDatabase: String = "./cards.cdb"
+        val DefaultDeckDirectory: String = "./"
         val DefaultLastDeck: String = ""
+        val DefaultCardDataSettings: CardDataSettings = CardDataSettings.ExplicitCardDataSource(DefaultDatabase, DefaultDeckDirectory)
         val DefaultRememberWindow: Boolean = true
         val DefaultWindowSize: Dimension = Dimension(1000, 700)
         val DefaultWindowX: Int = 0
@@ -58,9 +62,9 @@ class Settings private constructor() {
         fun default(): Settings = Settings()
 
         fun read(): Settings {
-            if (SETTINGS_FILE.exists()) {
+            if (SettingsFile.exists()) {
                 try {
-                    return IoUtil.gson.fromJson(SETTINGS_FILE.readAllText(), Settings::class.java)
+                    return IoUtil.gson.fromJson(SettingsFile.readAllText(), Settings::class.java)
                 } catch (ex: Exception) {
                     ExceptionInfoDialog(ex).isVisible = true
                     return Settings.default()
@@ -88,5 +92,23 @@ data class WindowSettings(
                 windowSize = window.size
         )
     }
+}
+
+sealed class CardDataSettings {
+
+    abstract val cardDatabaseLocation: String
+    abstract val deckDirectory: String
+
+    class YgoProInstallCardDataSource(val install: YgoProInstall): CardDataSettings() {
+
+        override val cardDatabaseLocation: String
+            get() = this.install.databaseLocation.toAbsolutePath().toString()
+
+        override val deckDirectory: String
+            get() = this.install.deckDirectory.toAbsolutePath().toString()
+
+    }
+
+    class ExplicitCardDataSource(override val cardDatabaseLocation: String, override val deckDirectory: String): CardDataSettings()
 
 }
